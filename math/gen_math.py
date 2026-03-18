@@ -1,5 +1,5 @@
-from openai import OpenAI
-from cachesaver.models.openai import AsyncOpenAI
+from openai import AsyncOpenAI
+#from cachesaver.models.openai import AsyncOpenAI
 import json
 import numpy as np
 import time
@@ -53,7 +53,7 @@ def construct_message(agents, question, idx):
     prefix_string = "These are the recent/updated opinions from other agents: "
 
     for agent in agents:
-        agent_response = agent[idx]["content"]
+        agent_response = agent[-1]["content"]
         response = "\n\n One agent response: ```{}```".format(agent_response)
 
         prefix_string = prefix_string + response
@@ -119,7 +119,7 @@ async def main():
                     message = construct_message(agent_contexts_other, question_prompt, 2*round - 1)
                     agent_context.append(message)
 
-                    print("message: ", message)
+                    #print("message: ", message)
 
                 tasks.append(generate_answer(agent_context))
             
