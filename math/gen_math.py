@@ -1,9 +1,12 @@
 from openai import OpenAI
+from cachesaver.models.openai import AsyncOpenAI
 import json
 import numpy as np
 import time
 import pickle
 from tqdm import tqdm
+
+import asyncio
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -22,14 +25,14 @@ def parse_bullets(sentence):
 
     return bullets
 
-client = OpenAI(
+client = AsyncOpenAI(
     base_url='http://localhost:11434/v1/',
     api_key='ollama',  # required but ignored
 )
 
-def generate_answer(answer_context):
+async def generate_answer(answer_context):
     try:
-        completion = client.chat.completions.create(
+        completion = await client.chat.completions.create(
                 messages=answer_context,
                 model="qwen3:0.6b")
     except Exception as e:
@@ -86,8 +89,7 @@ def most_frequent(List):
 
     return num
 
-
-if __name__ == "__main__":
+async def main():
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
     agents = 2
@@ -109,6 +111,7 @@ if __name__ == "__main__":
         question_prompt = "We seek to find the result of {}+{}*{}+{}-{}*{}?".format(a, b, c, d, e, f)
 
         for round in range(rounds):
+            tasks = []
             for i, agent_context in enumerate(agent_contexts):
 
                 if round != 0:
@@ -118,11 +121,15 @@ if __name__ == "__main__":
 
                     print("message: ", message)
 
-                completion = generate_answer(agent_context)
+                tasks.append(generate_answer(agent_context))
+            
+            completions = await asyncio.gather(*tasks)
 
+            for i, completion in enumerate(completions):
                 assistant_message = construct_assistant_message(completion)
                 agent_context.append(assistant_message)
-                print(completion)
+                #print(completion)
+            
 
         text_answers = []
 
@@ -154,3 +161,7 @@ if __name__ == "__main__":
     pdb.set_trace()
     print(answer)
     print(agent_context)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
