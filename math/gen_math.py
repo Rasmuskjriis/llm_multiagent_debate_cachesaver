@@ -1,5 +1,5 @@
-from openai import AsyncOpenAI
-#from cachesaver.models.openai import AsyncOpenAI
+#from openai import AsyncOpenAI
+from cachesaver.models.openai import AsyncOpenAI
 import json
 import numpy as np
 import time
@@ -28,6 +28,8 @@ def parse_bullets(sentence):
 client = AsyncOpenAI(
     base_url='http://localhost:11434/v1/',
     api_key='ollama',  # required but ignored
+    namespace="openai_demo",
+    cachedir="./cache"
 )
 
 async def generate_answer(answer_context):
@@ -96,7 +98,7 @@ async def main():
     rounds = 3
     np.random.seed(0)
 
-    evaluation_round = 100
+    evaluation_round = 10
     scores = []
 
     generated_description = {}
