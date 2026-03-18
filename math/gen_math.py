@@ -29,10 +29,10 @@ client = AsyncOpenAI(
     base_url='http://localhost:11434/v1/',
     api_key='ollama',  # required but ignored
     namespace="openai_demo",
-    cachedir="./cache"
+    cachedir="./cache" # set it to 'None' for testing without CacheSaver
 )
 
-semaphore = asyncio.Semaphore(2)
+semaphore = asyncio.Semaphore(1)
 
 async def generate_answer(answer_context):
     async with semaphore:
@@ -159,7 +159,7 @@ async def main():
         except:
             continue
 
-        print("performance:", np.mean(scores), np.std(scores) / (len(scores) ** 0.5))
+        print("\n performance:", np.mean(scores), np.std(scores) / (len(scores) ** 0.5))
 
     pickle.dump(generated_description, open("math_agents{}_rounds{}.p".format(agents, rounds), "wb"))
     import pdb
