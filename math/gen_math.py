@@ -5,6 +5,7 @@ import numpy as np
 import time
 import pickle
 from tqdm import tqdm
+import argparse
 
 import asyncio
 
@@ -25,16 +26,9 @@ def parse_bullets(sentence):
 
     return bullets
 
-client = AsyncOpenAI(
-    base_url='http://localhost:11434/v1/',
-    api_key='ollama',  # required but ignored
-    namespace="openai_demo",
-    cachedir="../cache" # set it to 'None' for testing without CacheSaver
-)
-
 semaphore = asyncio.Semaphore(1)
 
-async def generate_answer(answer_context):
+async def generate_answer(client, answer_context):
     async with semaphore:
         try:
             completion = await client.chat.completions.create(
@@ -94,7 +88,14 @@ def most_frequent(List):
 
     return num
 
-async def main(agents, rounds, evaluation_round):
+async def main(agents, rounds, evaluation_round, use_cachesaver):
+    client = AsyncOpenAI(
+        base_url='http://localhost:11434/v1/',
+        api_key='ollama',  # required but ignored
+        namespace="openai_demo",
+        cachedir="../cache" if use_cachesaver else None
+    )
+    
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
     #agents = 2
@@ -126,7 +127,7 @@ async def main(agents, rounds, evaluation_round):
 
                     #print("message: ", message)
 
-                tasks.append(generate_answer(agent_context))
+                tasks.append(generate_answer(client, agent_context))
             
             completions = await asyncio.gather(*tasks)
 
@@ -169,4 +170,20 @@ async def main(agents, rounds, evaluation_round):
 
 
 if __name__ == "__main__":
-    asyncio.run(main(agents=2, rounds=3, evaluation_round=10))
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--agents", type=int, default=2)
+    parser.add_argument("--rounds", type=int, default=3)
+    parser.add_argument("--evaluation_round", type=int, default=10)
+    parser.add_argument("--no_cache", action="store_false", dest="use_cachesaver")
+
+    args = parser.parse_args()
+
+    asyncio.run(
+        main(
+            agents=args.agents, 
+            rounds=args.rounds, 
+            evaluation_round=args.evaluation_round, 
+            use_cachesaver=args.use_cachesaver
+        )
+    )
