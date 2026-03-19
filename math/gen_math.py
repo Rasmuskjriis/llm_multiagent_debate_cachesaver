@@ -29,7 +29,7 @@ client = AsyncOpenAI(
     base_url='http://localhost:11434/v1/',
     api_key='ollama',  # required but ignored
     namespace="openai_demo",
-    cachedir="./cache" # set it to 'None' for testing without CacheSaver
+    cachedir="../cache" # set it to 'None' for testing without CacheSaver
 )
 
 semaphore = asyncio.Semaphore(1)
