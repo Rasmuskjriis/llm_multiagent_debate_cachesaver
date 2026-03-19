@@ -94,14 +94,14 @@ def most_frequent(List):
 
     return num
 
-async def main():
+async def main(agents, rounds, evaluation_round):
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
-    agents = 2
-    rounds = 3
+    #agents = 2
+    #rounds = 3
     np.random.seed(0)
 
-    evaluation_round = 10
+    #evaluation_round = 10
     scores = []
 
     generated_description = {}
@@ -169,4 +169,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main(agents=2, rounds=3, evaluation_round=10))
