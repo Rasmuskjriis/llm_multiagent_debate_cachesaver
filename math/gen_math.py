@@ -158,8 +158,8 @@ async def main():
                 scores.append(0)
         except:
             continue
-
-        print("\n performance:", np.mean(scores), np.std(scores) / (len(scores) ** 0.5))
+        print("")
+        print("performance:", np.mean(scores), np.std(scores) / (len(scores) ** 0.5))
 
     pickle.dump(generated_description, open("math_agents{}_rounds{}.p".format(agents, rounds), "wb"))
     import pdb
