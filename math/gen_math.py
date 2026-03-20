@@ -1,5 +1,5 @@
-#from openai import AsyncOpenAI
-from cachesaver.models.openai import AsyncOpenAI
+from openai import AsyncOpenAI
+#from cachesaver.models.openai import AsyncOpenAI
 import json
 import numpy as np
 import time
@@ -92,8 +92,8 @@ async def main(agents, rounds, evaluation_round, use_cachesaver):
     client = AsyncOpenAI(
         base_url='http://localhost:11434/v1/',
         api_key='ollama',  # required but ignored
-        namespace="openai_demo",
-        cachedir="../cache" if use_cachesaver else None
+        #namespace="openai_demo",
+        #cachedir="../cache" if use_cachesaver else None
     )
     
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
@@ -159,14 +159,16 @@ async def main(agents, rounds, evaluation_round, use_cachesaver):
                 scores.append(0)
         except:
             continue
-        print("")
-        print("performance:", np.mean(scores), np.std(scores) / (len(scores) ** 0.5))
+        mean = np.mean(scores)
+        std = np.std(scores) / (len(scores) ** 0.5)
 
-    pickle.dump(generated_description, open("math_agents{}_rounds{}.p".format(agents, rounds), "wb"))
-    import pdb
+        return {"mean": mean, "std": std}
+
+    #pickle.dump(generated_description, open("math_agents{}_rounds{}.p".format(agents, rounds), "wb"))
+    #import pdb
     #pdb.set_trace()
-    print(answer)
-    print(agent_context)
+    #print(answer)
+    #print(agent_context)
 
 
 if __name__ == "__main__":
