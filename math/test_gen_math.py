@@ -11,7 +11,6 @@ class Test1(unittest.IsolatedAsyncioTestCase):
         self.results = []
     
     async def experiment_without_CacheSaver(self, agents, rounds, evaluation_round, use_cachesaver):
-        print("Starting test_without_CacheSaver")
         start_time = time.time()
         result = await gen_math.main(agents, rounds, evaluation_round, use_cachesaver)
         end_time = time.time()
@@ -23,9 +22,12 @@ class Test1(unittest.IsolatedAsyncioTestCase):
             "rounds": rounds,
             "evaluation_round": evaluation_round,
             "use_cachesaver": use_cachesaver,
-            "mean": result["mean"],
-            "std": result["std"],
-            "runtime": runtime
+            "accuracy": result["mean"].round(2),
+            #"std": result["std"],
+            "prompt_tokens": result["prompt_tokens"],
+            "completion_tokens": result["completion_tokens"],
+            "total_tokens": result["total_tokens"],
+            "runtime (s)": round(runtime, 2)
         }
 
         self.results.append(row)
@@ -47,7 +49,9 @@ class Test1(unittest.IsolatedAsyncioTestCase):
         print("\nResults:")
         print(dataframe)
 
-        dataframe.to_csv("experiment_without_CacheSaver.csv", index=False)
+        #dataframe.to_csv("experiment_without_CacheSaver.csv", index=False)
+        
+        dataframe.to_excel("experiment_results.xlsx", index=False)
 
         self.assertTrue(len(dataframe) > 0)
 

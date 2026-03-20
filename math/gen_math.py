@@ -107,6 +107,10 @@ async def main(agents, rounds, evaluation_round, use_cachesaver):
 
     generated_description = {}
 
+    prompt_tokens = 0
+    completion_tokens = 0
+    total_tokens = 0
+
     for round in tqdm(range(evaluation_round)):
         a, b, c, d, e, f = np.random.randint(0, 30, size=6)
 
@@ -162,7 +166,21 @@ async def main(agents, rounds, evaluation_round, use_cachesaver):
         mean = np.mean(scores)
         std = np.std(scores) / (len(scores) ** 0.5)
 
-        return {"mean": mean, "std": std}
+        usage = getattr(completion, "usage", None)
+        prompt_tokens += usage.prompt_tokens
+        completion_tokens += usage.completion_tokens
+        total_tokens += usage.total_tokens
+
+        print("\nFinished")
+        print("Prompt tokens: ", usage.prompt_tokens)
+        print("Completion tokens: ", usage.completion_tokens)
+        print("Total tokens: ", usage.total_tokens)
+
+    return {"mean": mean, 
+            "std": std, 
+            "prompt_tokens": prompt_tokens, 
+            "completion_tokens": completion_tokens, 
+            "total_tokens": total_tokens}
 
     #pickle.dump(generated_description, open("math_agents{}_rounds{}.p".format(agents, rounds), "wb"))
     #import pdb
