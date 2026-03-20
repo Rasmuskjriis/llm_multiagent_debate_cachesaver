@@ -38,7 +38,7 @@ async def generate_answer(client, answer_context):
             print(f"An error occurred: {e}")
             print("retrying due to an error......")
             await asyncio.sleep(5)
-            return await generate_answer(answer_context)
+            return await generate_answer(client, answer_context)
 
     return completion
 
@@ -164,7 +164,7 @@ async def main(agents, rounds, evaluation_round, use_cachesaver):
 
     pickle.dump(generated_description, open("math_agents{}_rounds{}.p".format(agents, rounds), "wb"))
     import pdb
-    pdb.set_trace()
+    #pdb.set_trace()
     print(answer)
     print(agent_context)
 

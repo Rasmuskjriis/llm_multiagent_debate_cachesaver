@@ -13,6 +13,16 @@ class Test1(unittest.IsolatedAsyncioTestCase):
         evaluation_round = 5
         use_cachesaver = False
 
+        print("Starting test_without_CacheSaver")
+        await gen_math.main(agents, rounds, evaluation_round, use_cachesaver)
+
+    async def test_with_CacheSaver(self):
+        agents = 2
+        rounds = 3
+        evaluation_round = 5
+        use_cachesaver = True
+
+        print("Starting test_with_CacheSaver")
         await gen_math.main(agents, rounds, evaluation_round, use_cachesaver)
 
 if __name__ == '__main__':
