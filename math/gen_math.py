@@ -26,19 +26,19 @@ def parse_bullets(sentence):
 
     return bullets
 
-semaphore = asyncio.Semaphore(1)
+#semaphore = asyncio.Semaphore(1)
 
 async def generate_answer(client, answer_context):
-    async with semaphore:
-        try:
-            completion = await client.chat.completions.create(
-                    messages=answer_context,
-                    model="qwen3:0.6b")
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            print("retrying due to an error......")
-            await asyncio.sleep(5)
-            return await generate_answer(client, answer_context)
+    #async with semaphore:
+    try:
+        completion = await client.chat.completions.create(
+                messages=answer_context,
+                model="qwen3:0.6b")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        print("retrying due to an error......")
+        await asyncio.sleep(5)
+        return await generate_answer(client, answer_context)
 
     return completion
 
