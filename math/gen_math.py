@@ -9,6 +9,8 @@ import argparse
 
 import asyncio
 
+from clients.client_strategies import LocalOllamaCLient
+
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
     bullets = []
