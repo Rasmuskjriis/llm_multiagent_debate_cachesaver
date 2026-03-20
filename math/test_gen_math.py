@@ -48,8 +48,6 @@ class Test1(unittest.IsolatedAsyncioTestCase):
 
         print("\nResults:")
         print(dataframe)
-
-        #dataframe.to_csv("experiment_without_CacheSaver.csv", index=False)
         
         dataframe.to_excel("experiment_results.xlsx", index=False)
 
