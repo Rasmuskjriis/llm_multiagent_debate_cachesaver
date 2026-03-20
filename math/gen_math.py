@@ -171,10 +171,10 @@ async def main(agents, rounds, evaluation_round, use_cachesaver):
         completion_tokens += usage.completion_tokens
         total_tokens += usage.total_tokens
 
-        print("\nFinished")
-        print("Prompt tokens: ", usage.prompt_tokens)
-        print("Completion tokens: ", usage.completion_tokens)
-        print("Total tokens: ", usage.total_tokens)
+        #print("\nFinished")
+        #print("Prompt tokens: ", usage.prompt_tokens)
+        #print("Completion tokens: ", usage.completion_tokens)
+        #print("Total tokens: ", usage.total_tokens)
 
     return {"mean": mean, 
             "std": std, 
