@@ -172,9 +172,9 @@ async def main(agents, rounds, evaluation_round, use_cachesaver):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--agents", type=int, default=2)
-    parser.add_argument("--rounds", type=int, default=3)
-    parser.add_argument("--evaluation_round", type=int, default=10)
+    parser.add_argument("-a", "--agents", type=int, default=2)
+    parser.add_argument("-r", "--rounds", type=int, default=3)
+    parser.add_argument("-e","--evaluation_rounds", type=int, default=10)
     parser.add_argument("--no_cache", action="store_false", dest="use_cachesaver")
 
     args = parser.parse_args()
@@ -183,7 +183,7 @@ if __name__ == "__main__":
         main(
             agents=args.agents, 
             rounds=args.rounds, 
-            evaluation_round=args.evaluation_round, 
+            evaluation_round=args.evaluation_rounds, 
             use_cachesaver=args.use_cachesaver
         )
     )
