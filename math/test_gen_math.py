@@ -53,7 +53,7 @@ class Test1(unittest.IsolatedAsyncioTestCase):
         print("\nResults:")
         print(dataframe)
         
-        dataframe.to_excel("Experiments/Qwen2.5_1.5b/experiment_results_qwen2.5_1.5b_improved.xlsx", index=False)
+        dataframe.to_excel("Experiments/Qwen2.5_7b/experiment_results_qwen2.5_7b_improved_limited.xlsx", index=False)
 
         self.assertTrue(len(dataframe) > 0)
 

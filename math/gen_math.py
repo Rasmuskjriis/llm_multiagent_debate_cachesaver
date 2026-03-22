@@ -33,7 +33,7 @@ async def generate_answer(client, answer_context):
     try:
         completion = await client.chat.completions.create(
                 messages=answer_context,
-                model="qwen2.5:1.5b")
+                model="qwen2.5:7b")
     except Exception as e:
         print(f"An error occurred: {e}")
         print("retrying due to an error......")
@@ -49,7 +49,7 @@ def construct_message(agents, question):
     if len(agents) == 0:
         return {"role": "user", "content": "Can you verify that your answer is correct. Please reiterate your answer, Include your reasoning step by step and at the end of your response, please write ONLY the final answer on a separate line WITH space on either side of the number like: Answer: <number> "}
 
-    prefix_string = "These are the recent/updated opinions from other agents: "
+    prefix_string = "The original question is: {}. These are the recent/updated opinions from other agents: ".format(question)
 
     agent_response = ""
 
@@ -73,10 +73,25 @@ def construct_assistant_message(completion):
     return {"role": "assistant", "content": content}
 
 def parse_answer(sentence):
-    match = re.search(r"Answer:\s*(-?\d+\.?\d*)", sentence)
-    if match:
-        return float(match.group(1))
-    return None
+    print("SENTENCE", sentence)
+    parts = sentence.split(" ")
+
+    print("SPLIT SENTENCE", parts)
+
+    for part in parts[::-1]:
+        try:
+            print("PART", part)
+            print("PART TYPE", type(part))
+
+            filtered_part = re.sub(r'[^-0-9]', "", part)
+            print("FILTERED PART", filtered_part)
+            print("FILTERED PART TYPE", type(part))
+
+
+            answer = float(filtered_part)
+            return answer
+        except:
+            continue
 
 
 def most_frequent(List):
