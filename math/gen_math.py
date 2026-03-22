@@ -33,7 +33,7 @@ async def generate_answer(client, answer_context):
     try:
         completion = await client.chat.completions.create(
                 messages=answer_context,
-                model="qwen2.5:7b")
+                model="qwen3:0.6b")
     except Exception as e:
         print(f"An error occurred: {e}")
         print("retrying due to an error......")
