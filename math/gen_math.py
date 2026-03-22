@@ -9,7 +9,7 @@ import argparse
 
 import asyncio
 
-from clients.client_strategies import LocalOllamaCLient
+from clients.client_strategies import LocalOllamaClient
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -33,9 +33,7 @@ semaphore = asyncio.Semaphore(1)
 async def generate_answer(client, answer_context):
     async with semaphore:
         try:
-            completion = await client.chat.completions.create(
-                    messages=answer_context,
-                    model="qwen3:0.6b")
+            completion = await client.create_chat_completion(messages=answer_context)
         except Exception as e:
             print(f"An error occurred: {e}")
             print("retrying due to an error......")
@@ -90,13 +88,8 @@ def most_frequent(List):
 
     return num
 
-async def main(agents, rounds, evaluation_round, use_cachesaver):
-    client = AsyncOpenAI(
-        base_url='http://localhost:11434/v1/',
-        api_key='ollama',  # required but ignored
-        namespace="openai_demo",
-        cachedir="../cache" if use_cachesaver else None
-    )
+async def main(agents, rounds, evaluation_round, model, use_cachesaver):
+    client = LocalOllamaClient(model=model, cachesaver=use_cachesaver)
     
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
@@ -177,6 +170,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--agents", type=int, default=2)
     parser.add_argument("-r", "--rounds", type=int, default=3)
     parser.add_argument("-e","--evaluation_rounds", type=int, default=10)
+    parser.add_argument("-m","--model", type=str, default="qwen3:0.6b")
     parser.add_argument("--no_cache", action="store_false", dest="use_cachesaver")
 
     args = parser.parse_args()
@@ -186,6 +180,7 @@ if __name__ == "__main__":
             agents=args.agents, 
             rounds=args.rounds, 
             evaluation_round=args.evaluation_rounds, 
+            model=args.model,
             use_cachesaver=args.use_cachesaver
         )
     )

@@ -1,4 +1,4 @@
-from abs import ABC, abstractmethod
+from abc import ABC, abstractmethod
 
 from cachesaver.models.openai import AsyncOpenAI
 
@@ -7,7 +7,7 @@ class ClientStrategy(ABC):
     def create_chat_completion(self):
         pass
 
-class LocalOllamaCLient(ClientStrategy):
+class LocalOllamaClient(ClientStrategy):
     def __init__(self, model, cachesaver=True):
         self.client = AsyncOpenAI(
             base_url='http://localhost:11434/v1/',
