@@ -9,7 +9,7 @@ import argparse
 import re
 import asyncio
 
-from clients.client_strategies import LocalOllamaClient
+from clients.client_strategies import OllamaClient, CacheSaverOllamaClient
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -31,14 +31,13 @@ def parse_bullets(sentence):
 #semaphore = asyncio.Semaphore(1)
 
 async def generate_answer(client, answer_context):
-    async with semaphore:
-        try:
-            completion = await client.create_chat_completion(messages=answer_context)
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            print("retrying due to an error......")
-            await asyncio.sleep(5)
-            return await generate_answer(answer_context)
+    try:
+        completion = await client.create_chat_completion(messages=answer_context)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        print("retrying due to an error......")
+        await asyncio.sleep(5)
+        return await generate_answer(answer_context)
 
     return completion
 
@@ -107,7 +106,7 @@ def most_frequent(List):
     return num
 
 async def main(agents, rounds, evaluation_round, model, use_cachesaver):
-    client = LocalOllamaClient(model=model, cachesaver=use_cachesaver)
+    client = OllamaClient(model=model)
     
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
