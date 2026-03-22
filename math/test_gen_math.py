@@ -23,7 +23,7 @@ class Test1(unittest.IsolatedAsyncioTestCase):
             "rounds": rounds,
             "evaluation_round": evaluation_round,
             "use_cachesaver": use_cachesaver,
-            "accuracy": result["mean"].round(2),
+            "accuracy": round(result["mean"], 2),
             #"std": result["std"],
             "prompt_tokens": result["prompt_tokens"],
             "completion_tokens": result["completion_tokens"],
@@ -53,7 +53,7 @@ class Test1(unittest.IsolatedAsyncioTestCase):
         print("\nResults:")
         print(dataframe)
         
-        dataframe.to_excel("experiment_results_new.xlsx", index=False)
+        dataframe.to_excel("Experiments/Qwen2.5_1.5b/experiment_results_qwen2.5_1.5b_improved.xlsx", index=False)
 
         self.assertTrue(len(dataframe) > 0)
 
