@@ -1,3 +1,4 @@
 .vscode/
 cache/
 **/__pycache__/
+llm_multiagent_debate.egg-info
