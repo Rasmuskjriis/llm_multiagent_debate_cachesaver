@@ -108,8 +108,11 @@ def most_frequent(List):
     return num
 
 async def main(agents, rounds, evaluation_round, model, use_cachesaver):
-    client = CacheSaverOllamaClient(model=model)
-    
+    if use_cachesaver:
+        client = CacheSaverOllamaClient(model=model)
+    else:
+        client = OllamaClient(model=model)
+
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
     #agents = 2
@@ -228,7 +231,7 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--rounds", type=int, default=3)
     parser.add_argument("-e","--evaluation_rounds", type=int, default=10)
     parser.add_argument("-m","--model", type=str, default="qwen3:0.6b")
-    parser.add_argument("--no_cache", action="store_false", dest="use_cachesaver")
+    parser.add_argument("-c","--cachesaver", action="store_true", dest="use_cachesaver")
 
     args = parser.parse_args()
 
