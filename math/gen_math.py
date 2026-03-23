@@ -1,10 +1,8 @@
 import numpy as np
-import pickle
 from tqdm import tqdm
 import argparse
 import re
 import asyncio
-import traceback
 
 from clients.client_strategies import OllamaClient, CacheSaverOllamaClient
 
@@ -33,7 +31,6 @@ async def generate_answer(client, answer_context):
         completion = await client.create_chat_completion(messages=answer_context)
     except Exception as e:
         print(f"An error occurred: {e}")
-        print(traceback.format_exc())
         print("retrying due to an error......")
         await asyncio.sleep(5)
         return await generate_answer(client, answer_context)
@@ -192,12 +189,6 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
             "prompt_tokens": prompt_tokens, 
             "completion_tokens": completion_tokens, 
             "total_tokens": total_tokens}
-
-    #pickle.dump(generated_description, open("math_agents{}_rounds{}.p".format(agents, rounds), "wb"))
-    #import pdb
-    #pdb.set_trace()
-    #print(answer)
-    #print(agent_context)
 
 
 if __name__ == "__main__":
