@@ -1,8 +1,4 @@
-from openai import AsyncOpenAI
-#from cachesaver.models.openai import AsyncOpenAI
-import json
 import numpy as np
-import time
 import pickle
 from tqdm import tqdm
 import argparse
@@ -29,6 +25,7 @@ def parse_bullets(sentence):
 
     return bullets
 
+# We need to use semaphore when running using CacheSavers api
 #semaphore = asyncio.Semaphore(1)
 
 async def generate_answer(client, answer_context):
@@ -74,20 +71,11 @@ def construct_assistant_message(completion):
     return {"role": "assistant", "content": content}
 
 def parse_answer(sentence):
-    print("SENTENCE", sentence)
     parts = sentence.split(" ")
-
-    print("SPLIT SENTENCE", parts)
 
     for part in parts[::-1]:
         try:
-            print("PART", part)
-            print("PART TYPE", type(part))
-
             filtered_part = re.sub(r'[^-0-9]', "", part)
-            print("FILTERED PART", filtered_part)
-            print("FILTERED PART TYPE", type(part))
-
 
             answer = float(filtered_part)
             return answer
@@ -115,11 +103,8 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
 
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
-    #agents = 2
-    #rounds = 3
     np.random.seed(0)
 
-    #evaluation_round = 10
     scores = []
 
     generated_description = {}
@@ -149,8 +134,6 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
                     message = construct_message(agent_contexts_other, question_prompt)
                     agent_context.append(message)
 
-                    #print("message: ", message)
-
                 tasks.append(generate_answer(client, agent_context))
             
             completions = await asyncio.gather(*tasks)
@@ -158,8 +141,6 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
             for i, completion in enumerate(completions):
                 assistant_message = construct_assistant_message(completion)
                 agent_context.append(assistant_message)
-                #print(completion)
-            
 
         text_answers = []
 
@@ -205,11 +186,6 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
         prompt_tokens += usage.prompt_tokens
         completion_tokens += usage.completion_tokens
         total_tokens += usage.total_tokens
-
-        #print("\nFinished")
-        #print("Prompt tokens: ", usage.prompt_tokens)
-        #print("Completion tokens: ", usage.completion_tokens)
-        #print("Total tokens: ", usage.total_tokens)
 
     return {"mean": mean, 
             "std": std, 
