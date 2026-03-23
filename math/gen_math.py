@@ -149,10 +149,7 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
             if agent_context[-1]["role"] != "assistant":
                 continue
 
-            print("Raw agent output:", repr(agent_context[-1]['content']))
-
             text_answer = parse_answer(text_answer)
-            print("Parsed number:", text_answer)
 
             if text_answer is None:
                 continue
@@ -162,17 +159,13 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
         generated_description[(a, b, c, d, e, f)] = (agent_contexts, answer)
 
         try:
-            print("TEXT ANSWERS: ", text_answers)
             text_answer = most_frequent(text_answers)
-            print("MOST FREQUENT TEXT ANSWER: ", text_answer)
-            print("ANSWER: ", answer)
             if text_answer == answer:
                 scores.append(1)
             else:
                 scores.append(0)
         except:
             continue
-        print("SCORES: ", scores)
 
         # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
         if len(text_answers) > 0 and len(scores) > 0:
