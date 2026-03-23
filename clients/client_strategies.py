@@ -14,7 +14,7 @@ class CacheSaverOllamaClient(ClientStrategy):
             base_url='http://localhost:11434/v1/',
             api_key='ollama',  # required but ignored
             namespace="local_ollama_" + model,
-            cachedir="../cache"
+            cachedir="./cache"
         )
         self.model = model
 
@@ -22,7 +22,8 @@ class CacheSaverOllamaClient(ClientStrategy):
         return self.client.chat.completions.create(
                     messages=messages,
                     model=self.model,
-                    n=n)
+                    n=n
+        )
 
 class OllamaClient(ClientStrategy):
     def __init__(self, model):
@@ -36,4 +37,5 @@ class OllamaClient(ClientStrategy):
         return self.client.chat.completions.create(
                     messages=messages,
                     model=self.model,
-                    n=n)
+                    n=n
+        )

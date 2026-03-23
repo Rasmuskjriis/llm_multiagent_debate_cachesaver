@@ -8,6 +8,7 @@ from tqdm import tqdm
 import argparse
 import re
 import asyncio
+import traceback
 
 from clients.client_strategies import OllamaClient, CacheSaverOllamaClient
 
@@ -35,6 +36,7 @@ async def generate_answer(client, answer_context):
         completion = await client.create_chat_completion(messages=answer_context)
     except Exception as e:
         print(f"An error occurred: {e}")
+        print(traceback.format_exc())
         print("retrying due to an error......")
         await asyncio.sleep(5)
         return await generate_answer(client, answer_context)
@@ -191,7 +193,7 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
             continue
         print("SCORES: ", scores)
 
-        # Prevents error if LLM doesn't output a meaningful answer
+        # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
         if len(text_answers) > 0 and len(scores) > 0:
             mean = np.mean(scores)
             std = np.std(scores) / (len(scores) ** 0.5)
