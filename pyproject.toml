@@ -5,7 +5,8 @@ requires-python = ">=3.13"
 dependencies = [
     "uv",
     "numpy",
-    "cachesaver"
+    "cachesaver",
+    "pandas"
 ]
 
 [build-system]

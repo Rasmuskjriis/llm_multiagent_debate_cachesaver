@@ -177,6 +177,8 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
         completion_tokens += usage.completion_tokens
         total_tokens += usage.total_tokens
 
+        print("\nAccuracy: ", mean)
+
     return {"mean": mean, 
             "std": std, 
             "prompt_tokens": prompt_tokens, 
