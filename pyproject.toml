@@ -6,7 +6,8 @@ dependencies = [
     "uv",
     "numpy",
     "cachesaver",
-    "pandas"
+    "pandas",
+    "scipy"
 ]
 
 [build-system]

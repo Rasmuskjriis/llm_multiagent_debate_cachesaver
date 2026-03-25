@@ -24,7 +24,7 @@ class Test1(unittest.IsolatedAsyncioTestCase):
             "evaluation_round": evaluation_round,
             "use_cachesaver": use_cachesaver,
             "accuracy": round(result["mean"], 2),
-            #"std": result["std"],
+            "std": result["std"],
             "prompt_tokens": result["prompt_tokens"],
             "completion_tokens": result["completion_tokens"],
             "total_tokens": result["total_tokens"],

@@ -3,6 +3,7 @@ from tqdm import tqdm
 import argparse
 import re
 import asyncio
+import scipy
 
 from clients.client_strategies import OllamaClient, CacheSaverOllamaClient
 
@@ -92,6 +93,36 @@ def most_frequent(List):
 
     return num
 
+def calc_mean_sem_ci(scores):
+    n = len(scores)
+    
+    mean = np.mean(scores)
+    print("MEAN: ", mean)
+    
+    if n == 1:
+        return mean, None, None
+
+    sem = scipy.stats.sem(scores)
+    print("SEM: ", sem)
+    
+    # 90% confidence interval
+    #p = ppf(0.95)
+
+    # 95% confidence interval
+    p = 0.975
+
+    # 99% confidence interval
+    #p= ppf(0.995)
+
+    if (n >= 30):
+        ci = scipy.stats.norm.ppf(p) * sem
+    else:
+        ci = scipy.stats.t.ppf(p, df = n-1) * sem
+    print("CI: ", ci)
+
+    return mean, sem, ci
+
+
 async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     if use_cachesaver:
         client = CacheSaverOllamaClient(model=model)
@@ -111,7 +142,8 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     total_tokens = 0
 
     mean = 0
-    std = 0
+    sem = 0
+    ci = 0
 
     for round in tqdm(range(evaluation_round)):
         a, b, c, d, e, f = np.random.randint(0, 30, size=6)
@@ -167,20 +199,22 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
         except:
             continue
 
-        # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
-        if len(text_answers) > 0 and len(scores) > 0:
-            mean = np.mean(scores)
-            std = np.std(scores) / (len(scores) ** 0.5)
-
         usage = getattr(completion, "usage", None)
         prompt_tokens += usage.prompt_tokens
         completion_tokens += usage.completion_tokens
         total_tokens += usage.total_tokens
 
-        print("\nAccuracy: ", mean)
+    # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
+    if len(text_answers) > 0 and len(scores) > 0:
+        mean, sem, ci = calc_mean_sem_ci(scores)
+
+
+    print("\nAccuracy: ", mean)
+    if ci != None:
+        print("\nConfidence interval: [", mean-ci, ", ", mean+ci, "]")
 
     return {"mean": mean, 
-            "std": std, 
+            "sem": sem, 
             "prompt_tokens": prompt_tokens, 
             "completion_tokens": completion_tokens, 
             "total_tokens": total_tokens}
@@ -192,7 +226,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--agents", type=int, default=2)
     parser.add_argument("-r", "--rounds", type=int, default=3)
     parser.add_argument("-e","--evaluation_rounds", type=int, default=10)
-    parser.add_argument("-m","--model", type=str, default="qwen3:0.6b")
+    parser.add_argument("-m","--model", type=str, default="qwen2.5:1.5b")
     parser.add_argument("-c","--cachesaver", action="store_true", dest="use_cachesaver")
 
     args = parser.parse_args()
