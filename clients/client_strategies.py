@@ -12,7 +12,7 @@ class ClientStrategy(ABC):
 
 class CacheSaverOllamaClient(ClientStrategy):
     def __init__(self, model):
-        self.client = CacheSaverAsyncOp enAI(
+        self.client = CacheSaverAsyncOpenAI(
             base_url='http://localhost:11434/v1/',
             api_key='ollama',  # required but ignored
             namespace="local_ollama_" + model,

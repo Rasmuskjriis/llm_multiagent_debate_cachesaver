@@ -4,6 +4,8 @@ import argparse
 import re
 import asyncio
 import scipy
+import dotenv
+import os
 
 from clients.client_strategies import OllamaClient, CacheSaverOllamaClient
 
@@ -215,6 +217,11 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     ci_low = mean-ci
     ci_high = mean+ci
     print("\nConfidence interval: [", ci_low, ", ", ci_high, "]")
+
+    dotenv.load_dotenv()
+    key = os.getenv("GROQ_API_KEY")
+
+    print("API KEY: ", key)
 
     return {"mean": mean, 
             "sem": sem,
