@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 import os
+import dotenv
 
 from cachesaver.models.openai import AsyncOpenAI as CacheSaverAsyncOpenAI
 from openai import AsyncOpenAI
-from groq import Groq
+from groq import AsyncGroq
 
 class ClientStrategy(ABC):
     @abstractmethod
@@ -75,8 +76,9 @@ class OpenAIClient(ClientStrategy):
     
 class GroqClient(ClientStrategy):
     def __init__(self, model):
-        self.client = Groq(
-            api_key=os.environ.get("GROQ_API_KEY")
+        dotenv.load_dotenv()
+        self.client = AsyncGroq(
+            api_key = os.getenv("GROQ_API_KEY")
         )
         self.model = model
     

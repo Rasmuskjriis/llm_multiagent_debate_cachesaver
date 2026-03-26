@@ -7,7 +7,7 @@ import scipy
 import dotenv
 import os
 
-from clients.client_strategies import OllamaClient, CacheSaverOllamaClient
+import clients.client_strategies as clients
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -127,9 +127,9 @@ def calc_mean_sem_ci(scores):
 
 async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     if use_cachesaver:
-        client = CacheSaverOllamaClient(model=model)
+        client = clients.CacheSaverOllamaClient(model=model)
     else:
-        client = OllamaClient(model=model)
+        client = clients.GroqClient(model=model)
 
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
@@ -217,11 +217,6 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     ci_low = mean-ci
     ci_high = mean+ci
     print("\nConfidence interval: [", ci_low, ", ", ci_high, "]")
-
-    dotenv.load_dotenv()
-    key = os.getenv("GROQ_API_KEY")
-
-    print("API KEY: ", key)
 
     return {"mean": mean, 
             "sem": sem,
