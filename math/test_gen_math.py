@@ -62,14 +62,14 @@ class Test1(unittest.IsolatedAsyncioTestCase):
 
     async def test_without_CacheSaver_100_eval_rounds(self):
 
-        await self.experiment_without_CacheSaver(2, 3, 100, "qwen2.5:1.5b", False)
+        await self.experiment_without_CacheSaver(2, 3, 3, "qwen2.5:1.5b", True)
         
         dataframe = pd.DataFrame(self.results)
 
         print("\nResults:")
         print(dataframe)
         
-        dataframe.to_excel("math/Experiments/Qwen2.5_1.5b/experiment_results_qwen2.5_1.5b_ci_test.xlsx", index=False)
+        dataframe.to_excel("math/Experiments/Qwen2.5_1.5b/experiment_results_qwen2.5_1.5b_token_saved.xlsx", index=False)
 
 
 if __name__ == '__main__':
