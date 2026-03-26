@@ -24,7 +24,8 @@ class Test1(unittest.IsolatedAsyncioTestCase):
             "evaluation_round": evaluation_round,
             "use_cachesaver": use_cachesaver,
             "accuracy": round(result["mean"], 2),
-            "std": result["std"],
+            "standard error": result["sem"],
+            "confidence interval": (float(result["ci"][0]), float(result["ci"][1])),
             "prompt_tokens": result["prompt_tokens"],
             "completion_tokens": result["completion_tokens"],
             "total_tokens": result["total_tokens"],
@@ -36,10 +37,10 @@ class Test1(unittest.IsolatedAsyncioTestCase):
     async def test_run_experiment_without_CacheSaver(self):
         print("Starting experiment...")
 
-        values = [1, 2]
+        values = [1, 2, 3]
         use_cachesaver = False
 
-        model = "qwen3:0.6b"
+        model = "qwen2.5:1.5b"
 
         configs = [(a, r, e, model, use_cachesaver) for a, r, e in product(values, repeat=3)]
 
@@ -55,9 +56,20 @@ class Test1(unittest.IsolatedAsyncioTestCase):
         print("\nResults:")
         print(dataframe)
         
-        dataframe.to_excel("Experiments/Qwen3_0.6b/experiment_results_qwen3_0.6b_new.xlsx", index=False)
+        dataframe.to_excel("math/Experiments/Qwen2.5_1.5b/experiment_results_qwen2.5_1.5b_ci_test.xlsx", index=False)
 
         self.assertTrue(len(dataframe) > 0)
+
+    async def test_without_CacheSaver_100_eval_rounds(self):
+
+        await self.experiment_without_CacheSaver(2, 3, 100, "qwen2.5:1.5b", False)
+        
+        dataframe = pd.DataFrame(self.results)
+
+        print("\nResults:")
+        print(dataframe)
+        
+        dataframe.to_excel("math/Experiments/Qwen2.5_1.5b/experiment_results_qwen2.5_1.5b_ci_test.xlsx", index=False)
 
 
 if __name__ == '__main__':

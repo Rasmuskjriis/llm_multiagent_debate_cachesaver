@@ -100,7 +100,7 @@ def calc_mean_sem_ci(scores):
     print("MEAN: ", mean)
     
     if n == 1:
-        return mean, None, None
+        return mean, 0, 0
 
     sem = scipy.stats.sem(scores)
     print("SEM: ", sem)
@@ -210,11 +210,15 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
 
 
     print("\nAccuracy: ", mean)
-    if ci != None:
-        print("\nConfidence interval: [", mean-ci, ", ", mean+ci, "]")
+    print("CI: ", ci)
+
+    ci_low = mean-ci
+    ci_high = mean+ci
+    print("\nConfidence interval: [", ci_low, ", ", ci_high, "]")
 
     return {"mean": mean, 
-            "sem": sem, 
+            "sem": sem,
+            "ci": (ci_low, ci_high),
             "prompt_tokens": prompt_tokens, 
             "completion_tokens": completion_tokens, 
             "total_tokens": total_tokens}
