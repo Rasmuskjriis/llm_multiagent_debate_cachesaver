@@ -3,6 +3,7 @@ import os
 import dotenv
 
 from cachesaver.models.openai import AsyncOpenAI as CacheSaverAsyncOpenAI
+from cachesaver.models.groq import AsyncGroq as CacheSaverAsyncGroq
 from openai import AsyncOpenAI
 from groq import AsyncGroq
 
@@ -74,6 +75,23 @@ class OpenAIClient(ClientStrategy):
                     n=n
         )
     
+class CacheSaverGroqClient(ClientStrategy):
+    def __init__(self, model):
+        dotenv.load_dotenv()
+        self.client = CacheSaverAsyncGroq(
+            api_key = os.getenv("GROQ_API_KEY"),
+            namespace="groq_" + model,
+            cachedir="./cache"
+        )
+        self.model = model
+    
+    def create_chat_completion(self, messages, n=1):
+        return self.client.chat.completions.create(
+                    messages=messages,
+                    model=self.model,
+                    n=n
+        )
+
 class GroqClient(ClientStrategy):
     def __init__(self, model):
         dotenv.load_dotenv()
