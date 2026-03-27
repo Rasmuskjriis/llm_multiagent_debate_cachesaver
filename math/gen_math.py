@@ -4,8 +4,6 @@ import argparse
 import re
 import asyncio
 import scipy
-import dotenv
-import os
 
 import clients.client_strategies as clients
 
@@ -42,22 +40,19 @@ async def generate_answer(client, answer_context):
     return completion
 
 
-def construct_message(agents, question):
+def construct_message(agents_contexts, question):
 
     # Use introspection in the case in which there are no other agents.
-    if len(agents) == 0:
+    if len(agents_contexts) == 0:
         return {"role": "user", "content": "Can you verify that your answer is correct. Please reiterate your answer, Include your reasoning step by step and at the end of your response, please write ONLY the final answer on a separate line WITH space on either side of the number like: Answer: <number> "}
 
     prefix_string = "The original question is: {}. These are the recent/updated opinions from other agents: ".format(question)
 
     agent_response = ""
 
-    # Look only for assistant messages since in async it can be anything
-    for agent in agents:
-        for msg in reversed(agent):
-            if msg["role"] == "assistant":
-                agent_response = msg["content"]
-                break
+    # Takes the last response from each given agent and affixes it to the message
+    for agent_context in agents_contexts:
+        agent_response = agent_context[-1]["content"]
 
         response = "\n\n One agent response: ```{}```".format(agent_response)
 
