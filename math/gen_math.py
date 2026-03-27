@@ -95,6 +95,7 @@ def most_frequent(List):
 
     return num
 
+# Should be move to a util folder
 def calc_mean_sem_ci(scores):
     n = len(scores)
     
@@ -133,7 +134,7 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
 
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
-    np.random.seed(0)
+    np.random.seed(0) # should be removed when we do our experiment
 
     scores = []
 
@@ -169,8 +170,8 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
             
             completions = await asyncio.gather(*tasks)
 
-            for i, completion in enumerate(completions):
-                assistant_message = construct_assistant_message(completion)
+            for i, agent_context in enumerate(agent_contexts):
+                assistant_message = construct_assistant_message(completions[i])
                 agent_context.append(assistant_message)
 
         text_answers = []
@@ -201,7 +202,7 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
         except:
             continue
 
-        usage = getattr(completion, "usage", None)
+        usage = getattr(completions[0], "usage", None) # This is not right, should count up all completions usage
         prompt_tokens += usage.prompt_tokens
         completion_tokens += usage.completion_tokens
         total_tokens += usage.total_tokens
@@ -218,6 +219,8 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     ci_high = mean+ci
     print("\nConfidence interval: [", ci_low, ", ", ci_high, "]")
 
+    print(agent_contexts)
+
     return {"mean": mean, 
             "sem": sem,
             "ci": (ci_low, ci_high),
@@ -232,7 +235,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--agents", type=int, default=2)
     parser.add_argument("-r", "--rounds", type=int, default=3)
     parser.add_argument("-e","--evaluation_rounds", type=int, default=10)
-    parser.add_argument("-m","--model", type=str, default="qwen2.5:1.5b")
+    parser.add_argument("-m","--model", type=str, default="qwen3:0.6b")
     parser.add_argument("-c","--cachesaver", action="store_true", dest="use_cachesaver")
 
     args = parser.parse_args()
