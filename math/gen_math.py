@@ -175,11 +175,6 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
         for agent_context in agent_contexts:
             text_answer = string =  agent_context[-1]['content']
             text_answer = text_answer.replace(",", ".")
-
-            # Look only at assistant messages
-            if agent_context[-1]["role"] != "assistant":
-                continue
-
             text_answer = parse_answer(text_answer)
 
             if text_answer is None:
