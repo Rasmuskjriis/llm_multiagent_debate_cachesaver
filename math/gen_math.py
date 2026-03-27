@@ -27,16 +27,17 @@ def parse_bullets(sentence):
     return bullets
 
 # We need to use semaphore when running using CacheSavers api
-#semaphore = asyncio.Semaphore(1)
+semaphore = asyncio.Semaphore(1)
 
 async def generate_answer(client, answer_context):
-    try:
-        completion = await client.create_chat_completion(messages=answer_context)
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        print("retrying due to an error......")
-        await asyncio.sleep(5)
-        return await generate_answer(client, answer_context)
+    async with semaphore:
+        try:
+            completion = await client.create_chat_completion(messages=answer_context)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            print("retrying due to an error......")
+            await asyncio.sleep(5)
+            return await generate_answer(client, answer_context)
 
     return completion
 
@@ -130,7 +131,7 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     if use_cachesaver:
         client = clients.CacheSaverOllamaClient(model=model)
     else:
-        client = clients.GroqClient(model=model)
+        client = clients.OllamaClient(model=model)
 
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
