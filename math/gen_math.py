@@ -30,7 +30,9 @@ semaphore = asyncio.Semaphore(1)
 async def generate_answer(client, answer_context):
     async with semaphore:
         try:
-            completion = await client.create_chat_completion(messages=answer_context)
+            completion = await client.create_chat_completion(
+                messages = answer_context
+                )
         except Exception as e:
             print(f"An error occurred: {e}")
             print("retrying due to an error......")
@@ -52,7 +54,10 @@ def construct_message(agents_contexts, question):
 
     # Takes the last response from each given agent and affixes it to the message
     for agent_context in agents_contexts:
-        agent_response = agent_context[-1]["content"]
+        for msg in reversed(agent_context):
+            if msg["role"] == "assistant":
+                agent_response = msg["content"]
+                break
 
         response = "\n\n One agent response: ```{}```".format(agent_response)
 
@@ -124,9 +129,9 @@ def calc_mean_sem_ci(scores):
 
 async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     if use_cachesaver:
-        client = clients.CacheSaverOllamaClient(model=model)
+        client = clients.CacheSaverAsyncGroq(model=model)
     else:
-        client = clients.OllamaClient(model=model)
+        client = clients.GroqClient(model=model)
 
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
@@ -170,6 +175,11 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
                 assistant_message = construct_assistant_message(completions[i])
                 agent_context.append(assistant_message)
 
+                usage = getattr(completions[i], "usage", None)
+                prompt_tokens += usage.prompt_tokens
+                completion_tokens += usage.completion_tokens
+                total_tokens += usage.total_tokens  
+
         text_answers = []
 
         for agent_context in agent_contexts:
@@ -192,11 +202,6 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
                 scores.append(0)
         except:
             continue
-
-        usage = getattr(completions[0], "usage", None) # This is not right, should count up all completions usage
-        prompt_tokens += usage.prompt_tokens
-        completion_tokens += usage.completion_tokens
-        total_tokens += usage.total_tokens
 
     # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
     if len(text_answers) > 0 and len(scores) > 0:
