@@ -3,9 +3,9 @@ from tqdm import tqdm
 import argparse
 import re
 import asyncio
-import scipy
 
 import clients.client_strategies as clients
+from utils.utils import calc_mean_sem_ci
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -25,22 +25,20 @@ def parse_bullets(sentence):
     return bullets
 
 # We need to use semaphore when running using CacheSavers api
-semaphore = asyncio.Semaphore(1)
+#semaphore = asyncio.Semaphore(1)
 
 async def generate_answer(client, answer_context):
-    async with semaphore:
-        try:
-            completion = await client.create_chat_completion(
-                messages = answer_context
-                )
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            print("retrying due to an error......")
-            await asyncio.sleep(5)
-            return await generate_answer(client, answer_context)
+    try:
+        completion = await client.create_chat_completion(
+            messages = answer_context
+            )
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        print("retrying due to an error......")
+        await asyncio.sleep(5)
+        return await generate_answer(client, answer_context)
 
     return completion
-
 
 def construct_message(agents_contexts, question):
 
@@ -96,36 +94,6 @@ def most_frequent(List):
 
     return num
 
-# Should be move to a util folder
-def calc_mean_sem_ci(scores):
-    n = len(scores)
-    
-    mean = np.mean(scores)
-    print("MEAN: ", mean)
-    
-    if n == 1:
-        return mean, 0, 0
-
-    sem = scipy.stats.sem(scores)
-    print("SEM: ", sem)
-    
-    # 90% confidence interval
-    #p = ppf(0.95)
-
-    # 95% confidence interval
-    p = 0.975
-
-    # 99% confidence interval
-    #p= ppf(0.995)
-
-    if (n >= 30):
-        ci = scipy.stats.norm.ppf(p) * sem
-    else:
-        ci = scipy.stats.t.ppf(p, df = n-1) * sem
-    print("CI: ", ci)
-
-    return mean, sem, ci
-
 
 async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     if use_cachesaver:
@@ -150,7 +118,7 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     ci = 0
 
     for round in tqdm(range(evaluation_round)):
-        a, b, c, d, e, f = np.random.randint(0, 30, size=6)
+        a, b, c, d, e, f = np.random.randint(50, 200, size=6)
 
         answer = a + b * c + d - e * f
         agent_contexts = [[{"role": "user", "content": """What is the result of {}+{}*{}+{}-{}*{}? Include your reasoning step by step and at the end of your response, please write ONLY the final answer on a separate line WITH space on either side of the number like: Answer: <number> """.format(a, b, c, d, e, f)}] for agent in range(agents)]
@@ -178,7 +146,13 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
                 usage = getattr(completions[i], "usage", None)
                 prompt_tokens += usage.prompt_tokens
                 completion_tokens += usage.completion_tokens
-                total_tokens += usage.total_tokens  
+                total_tokens += usage.total_tokens
+
+                print(f"Round {round}, Agent {i}:")
+                print(f"  Prompt tokens: {usage.prompt_tokens}")
+                print(f"  Completion tokens: {usage.completion_tokens}")
+                print(f"  Total tokens: {usage.total_tokens}")
+
 
         text_answers = []
 
@@ -207,6 +181,9 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     if len(text_answers) > 0 and len(scores) > 0:
         mean, sem, ci = calc_mean_sem_ci(scores)
 
+    print("Prompt tokens: ", prompt_tokens)
+    print("Completion tokens: ", completion_tokens)
+    print("Total tokens: ", total_tokens)
 
     print("\nAccuracy: ", mean)
     print("CI: ", ci)
