@@ -109,9 +109,15 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
 
     generated_description = {}
 
+    api_calls = 0
+
     prompt_tokens = 0
     completion_tokens = 0
     total_tokens = 0
+
+    input_cost = 0
+    output_cost = 0
+    total_cost = 0
 
     mean = 0
     sem = 0
@@ -136,6 +142,7 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
                     agent_context.append(message)
 
                 tasks.append(generate_answer(client, agent_context))
+                api_calls += 1
             
             completions = await asyncio.gather(*tasks)
 
@@ -144,9 +151,16 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
                 agent_context.append(assistant_message)
 
                 usage = getattr(completions[i], "usage", None)
+
+                # Add to token count
                 prompt_tokens += usage.prompt_tokens
                 completion_tokens += usage.completion_tokens
                 total_tokens += usage.total_tokens
+
+                # Add to cost
+                input_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[0]
+                output_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[1]
+                total_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[2]
 
                 print(f"  Round {round}, Agent {i}:")
                 print(f"  Prompt tokens: {usage.prompt_tokens}")
@@ -189,13 +203,15 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
 
     print("Price -----------------")
     print("Model: ", model)
-    input_cost, output_cost, total_cost = tokens_to_cost(prompt_tokens, completion_tokens, model)
+
     print("Input cost: ", np.round(input_cost, 6))
     print("Output cost: ", np.round(output_cost, 6))
     print("Total cost: ", np.round(total_cost, 6))
 
     print("\nAccuracy: ", mean)
     print("CI: ", ci)
+
+    print("Api calls: ", api_calls)
 
     ci_low = mean-ci
     ci_high = mean+ci
@@ -208,7 +224,12 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
             "ci": (ci_low, ci_high),
             "prompt_tokens": prompt_tokens, 
             "completion_tokens": completion_tokens, 
-            "total_tokens": total_tokens}
+            "total_tokens": total_tokens,
+            "input_cost" : input_cost,
+            "output_cost" : output_cost,
+            "total_cost" : total_cost,
+            "api_calls" : api_calls
+            }
 
 
 if __name__ == "__main__":

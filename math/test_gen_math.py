@@ -29,6 +29,10 @@ class Test1(unittest.IsolatedAsyncioTestCase):
             "prompt_tokens": result["prompt_tokens"],
             "completion_tokens": result["completion_tokens"],
             "total_tokens": result["total_tokens"],
+            "input_cost ($)" : result["input_cost"],
+            "output_cost ($)" : result["output_cost"],
+            "total_cost ($)" : result["total_cost"],
+            "api_calls" : result["api_calls"],
             "runtime (s)": round(runtime, 2)
         }
 
@@ -37,10 +41,10 @@ class Test1(unittest.IsolatedAsyncioTestCase):
     async def test_run_experiment_without_CacheSaver(self):
         print("Starting experiment...")
 
-        values = [1, 2, 3]
+        values = [1, 2]
         use_cachesaver = False
 
-        model = "qwen2.5:1.5b"
+        model = "meta-llama/llama-4-scout-17b-16e-instruct"
 
         configs = [(a, r, e, model, use_cachesaver) for a, r, e in product(values, repeat=3)]
 
@@ -56,21 +60,20 @@ class Test1(unittest.IsolatedAsyncioTestCase):
         print("\nResults:")
         print(dataframe)
         
-        dataframe.to_excel("math/Experiments/Qwen2.5_1.5b/experiment_results_qwen2.5_1.5b_ci_test.xlsx", index=False)
+        dataframe.to_excel("math/Experiments/Llama4_17b/Experiment.xlsx", index=False)
 
         self.assertTrue(len(dataframe) > 0)
 
-    async def test_without_CacheSaver_100_eval_rounds(self):
+    #async def test_without_CacheSaver_100_eval_rounds(self):
 
-        await self.experiment_without_CacheSaver(2, 3, 3, "qwen2.5:1.5b", True)
+    #    await self.experiment_without_CacheSaver(2, 3, 3, "qwen2.5:1.5b", True)
         
-        dataframe = pd.DataFrame(self.results)
+    #    dataframe = pd.DataFrame(self.results)
 
-        print("\nResults:")
-        print(dataframe)
+    #    print("\nResults:")
+    #    print(dataframe)
         
-        dataframe.to_excel("math/Experiments/Qwen2.5_1.5b/experiment_results_qwen2.5_1.5b_token_saved.xlsx", index=False)
-
+    #    dataframe.to_excel("math/Experiments/Qwen2.5_1.5b/experiment_results_qwen2.5_1.5b_token_saved.xlsx", index=False)
 
 if __name__ == '__main__':
     unittest.main()
