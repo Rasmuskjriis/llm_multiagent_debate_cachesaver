@@ -5,7 +5,7 @@ import re
 import asyncio
 
 import clients.client_strategies as clients
-from utils.utils import calc_mean_sem_ci
+from utils.utils import calc_mean_sem_ci, tokens_to_cost
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -148,7 +148,7 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
                 completion_tokens += usage.completion_tokens
                 total_tokens += usage.total_tokens
 
-                print(f"Round {round}, Agent {i}:")
+                print(f"  Round {round}, Agent {i}:")
                 print(f"  Prompt tokens: {usage.prompt_tokens}")
                 print(f"  Completion tokens: {usage.completion_tokens}")
                 print(f"  Total tokens: {usage.total_tokens}")
@@ -181,9 +181,18 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     if len(text_answers) > 0 and len(scores) > 0:
         mean, sem, ci = calc_mean_sem_ci(scores)
 
+    print("CLIENT: ", client)
+
     print("Prompt tokens: ", prompt_tokens)
     print("Completion tokens: ", completion_tokens)
     print("Total tokens: ", total_tokens)
+
+    print("Price -----------------")
+    print("Model: ", model)
+    input_cost, output_cost, total_cost = tokens_to_cost(prompt_tokens, completion_tokens, model)
+    print("Input cost: ", np.round(input_cost, 6))
+    print("Output cost: ", np.round(output_cost, 6))
+    print("Total cost: ", np.round(total_cost, 6))
 
     print("\nAccuracy: ", mean)
     print("CI: ", ci)
@@ -192,7 +201,7 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     ci_high = mean+ci
     print("\nConfidence interval: [", ci_low, ", ", ci_high, "]")
 
-    print(agent_contexts)
+    #print(agent_contexts)
 
     return {"mean": mean, 
             "sem": sem,
