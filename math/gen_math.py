@@ -162,10 +162,10 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
                 output_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[1]
                 total_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[2]
 
-                print(f"  Round {round}, Agent {i}:")
-                print(f"  Prompt tokens: {usage.prompt_tokens}")
-                print(f"  Completion tokens: {usage.completion_tokens}")
-                print(f"  Total tokens: {usage.total_tokens}")
+                #print(f"  Round {round}, Agent {i}:")
+                #print(f"  Prompt tokens: {usage.prompt_tokens}")
+                #print(f"  Completion tokens: {usage.completion_tokens}")
+                #print(f"  Total tokens: {usage.total_tokens}")
 
 
         text_answers = []
@@ -195,27 +195,28 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     if len(text_answers) > 0 and len(scores) > 0:
         mean, sem, ci = calc_mean_sem_ci(scores)
 
-    print("CLIENT: ", client)
-
-    print("Prompt tokens: ", prompt_tokens)
-    print("Completion tokens: ", completion_tokens)
-    print("Total tokens: ", total_tokens)
-
-    print("Price -----------------")
-    print("Model: ", model)
-
-    print("Input cost: ", np.round(input_cost, 6))
-    print("Output cost: ", np.round(output_cost, 6))
-    print("Total cost: ", np.round(total_cost, 6))
-
-    print("\nAccuracy: ", mean)
-    print("CI: ", ci)
-
-    print("Api calls: ", api_calls)
-
     ci_low = mean-ci
     ci_high = mean+ci
-    print("\nConfidence interval: [", ci_low, ", ", ci_high, "]")
+
+    #print("CLIENT: ", client)
+
+    #print("Prompt tokens: ", prompt_tokens)
+    #print("Completion tokens: ", completion_tokens)
+    #print("Total tokens: ", total_tokens)
+
+    #print("Price -----------------")
+    #print("Model: ", model)
+
+    #print("Input cost: ", np.round(input_cost, 6))
+    #print("Output cost: ", np.round(output_cost, 6))
+    #print("Total cost: ", np.round(total_cost, 6))
+
+    #print("\nAccuracy: ", mean)
+    #print("CI: ", ci)
+
+    #print("Api calls: ", api_calls)
+
+    #print("\nConfidence interval: [", ci_low, ", ", ci_high, "]")
 
     #print(agent_contexts)
 
