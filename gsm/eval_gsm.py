@@ -3,6 +3,8 @@ import openai
 import numpy as np
 import time
 import re
+import argparse
+import asyncio
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -66,16 +68,17 @@ def parse_answer(input_str):
     return solution
 
 
-def compute_accuracy(gt, pred_solution):
+def compute_accuracy(gt, pred_solutions):
     answers = solve_math_problems(gt)
 
     if answers is None:
         return None
 
-    if type(pred_solution) == list:
+    if type(pred_solutions) == list:
         pred_answers = []
 
         for pred_solution in pred_solutions:
+            print("pred_solution: ", pred_solution)
             pred_answer = parse_answer(pred_solution)
 
             if pred_answer is None:
@@ -118,8 +121,8 @@ def most_frequent(List):
 
     return num
 
-if __name__ == "__main__":
-    response_dict = json.load(open("gsm_debate_3_3.json", "r"))
+async def main(file):
+    response_dict = json.load(open("gsm/results/{}".format(file), "r"))
 
     questions = list(response_dict.keys())
 
@@ -139,9 +142,19 @@ if __name__ == "__main__":
         if accurate is not None:
             accuracies.append(float(accurate))
         else:
-            import pdb
-            pdb.set_trace()
             print(gt)
 
         print("accuracies:", np.mean(accuracies), np.std(accuracies) / (len(accuracies) ** 0.5))
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-f", "--file", action="store", type=str, default="gsm_1_1.json")
+
+    args = parser.parse_args()
+
+    asyncio.run(
+        main(
+            file=args.file
+        )
+    )

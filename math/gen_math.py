@@ -95,7 +95,7 @@ def most_frequent(List):
     return num
 
 
-async def main(agents, rounds, evaluation_round, model, use_cachesaver):
+async def main(agents, rounds, problems, model, use_cachesaver):
     if use_cachesaver:
         client = clients.CacheSaverAsyncGroq(model=model)
     else:
@@ -123,7 +123,7 @@ async def main(agents, rounds, evaluation_round, model, use_cachesaver):
     sem = 0
     ci = 0
 
-    for round in tqdm(range(evaluation_round)):
+    for round in tqdm(range(problems)):
         a, b, c, d, e, f = np.random.randint(50, 200, size=6)
 
         answer = a + b * c + d - e * f
@@ -238,7 +238,7 @@ if __name__ == "__main__":
 
     parser.add_argument("-a", "--agents", type=int, default=2)
     parser.add_argument("-r", "--rounds", type=int, default=3)
-    parser.add_argument("-e","--evaluation_rounds", type=int, default=10)
+    parser.add_argument("-p","--problems", type=int, default=10)
     parser.add_argument("-m","--model", type=str, default="qwen3:0.6b")
     parser.add_argument("-c","--cachesaver", action="store_true", dest="use_cachesaver")
 
@@ -248,7 +248,7 @@ if __name__ == "__main__":
         main(
             agents=args.agents, 
             rounds=args.rounds, 
-            evaluation_round=args.evaluation_rounds, 
+            problems=args.problems, 
             model=args.model,
             use_cachesaver=args.use_cachesaver
         )

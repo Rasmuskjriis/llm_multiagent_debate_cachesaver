@@ -13,7 +13,7 @@ class Test1(unittest.IsolatedAsyncioTestCase):
     
     async def experiment_without_CacheSaver(self, agents, rounds, evaluation_round, model, use_cachesaver):
         start_time = time.time()
-        result = await gen_math.main(agents=agents, rounds=rounds, evaluation_round=evaluation_round, model=model, use_cachesaver=use_cachesaver)
+        result = await gen_math.main(agents=agents, rounds=rounds, problems=evaluation_round, model=model, use_cachesaver=use_cachesaver)
         end_time = time.time()
         
         runtime = end_time - start_time

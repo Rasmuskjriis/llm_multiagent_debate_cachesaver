@@ -20,15 +20,20 @@ async def generate_answer(client, answer_context):
 
     return completion
 
-def construct_message(agents, question, idx):
-    if len(agents) == 0:
+def construct_message(agents_contexts, question):
+    if len(agents_contexts) == 0:
         return {"role": "user", "content": "Can you double check that your answer is correct. Please reiterate your answer, with your final answer a single numerical number, in the form \\boxed{{answer}}."}
 
     prefix_string = "These are the solutions to the problem from other agents: "
 
-    for agent in agents:
-        agent_response = agent[idx]["content"]
-        response = "\n\n One agent solution: ```{}```".format(agent_response)
+    # Takes the last response from each given agent and affixes it to the message
+    for agent_context in agents_contexts:
+        for msg in reversed(agent_context):
+            if msg["role"] == "assistant":
+                agent_response = msg["content"]
+                break
+
+        response = "\n\n One agent response: ```{}```".format(agent_response)
 
         prefix_string = prefix_string + response
 
@@ -46,7 +51,7 @@ def read_jsonl(path: str):
         return [json.loads(line) for line in fh.readlines() if line]
 
 
-async def main(agents, rounds, questions, model, use_cachesaver):
+async def main(agents, rounds, problems, model, use_cachesaver):
     if use_cachesaver:
         client = clients.CacheSaverAsyncGroq(model=model)
     else:
@@ -56,10 +61,10 @@ async def main(agents, rounds, questions, model, use_cachesaver):
 
     generated_description = {}
 
-    test_questions = read_jsonl("gsm/data/test.jsonl")
-    random.shuffle(test_questions)
+    test_problems = read_jsonl("gsm/data/test.jsonl")
+    random.shuffle(test_problems)
 
-    for data in test_questions[:questions]:
+    for data in test_problems[:problems]:
         question = data['question']
         answer = data['answer']
 
@@ -71,7 +76,7 @@ async def main(agents, rounds, questions, model, use_cachesaver):
 
                 if round != 0:
                     agent_contexts_other = agent_contexts[:i] + agent_contexts[i+1:]
-                    message = construct_message(agent_contexts_other, question, 2*round - 1)
+                    message = construct_message(agent_contexts_other, question)
                     agent_context.append(message)
 
                 tasks.append(generate_answer(client, agent_context))
@@ -87,14 +92,14 @@ async def main(agents, rounds, questions, model, use_cachesaver):
     json.dump(generated_description, open("gsm/results/gsm_{}_{}.json".format(agents, rounds), "w"))
 
     print(answer)
-    print(agent_context)
+    print(agent_contexts)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-a", "--agents", type=int, default=2)
     parser.add_argument("-r", "--rounds", type=int, default=3)
-    parser.add_argument("-q", "--questions", type=int, default=10)
+    parser.add_argument("-p", "--problems", type=int, default=10)
     parser.add_argument("-m","--model", type=str, default="qwen3:0.6b")
     parser.add_argument("-c","--cachesaver", action="store_true", dest="use_cachesaver")
 
@@ -104,7 +109,7 @@ if __name__ == "__main__":
         main(
             agents=args.agents, 
             rounds=args.rounds,
-            questions=args.questions,
+            problems=args.problems,
             model=args.model,
             use_cachesaver=args.use_cachesaver
         )
