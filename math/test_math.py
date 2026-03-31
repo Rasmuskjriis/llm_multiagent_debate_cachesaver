@@ -11,9 +11,9 @@ class Test1(unittest.IsolatedAsyncioTestCase):
         asyncio.get_running_loop().set_debug(False)
         self.results = []
     
-    async def experiment_without_CacheSaver(self, agents, rounds, evaluation_round, model, use_cachesaver):
+    async def experiment_without_CacheSaver(self, agents, rounds, problems, model, use_cachesaver):
         start_time = time.time()
-        result = await gen_math.main(agents=agents, rounds=rounds, problems=evaluation_round, model=model, use_cachesaver=use_cachesaver)
+        result = await gen_math.main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
         end_time = time.time()
         
         runtime = end_time - start_time
@@ -21,7 +21,7 @@ class Test1(unittest.IsolatedAsyncioTestCase):
         row = {
             "agents": agents,
             "rounds": rounds,
-            "evaluation_round": evaluation_round,
+            "problems": problems,
             "use_cachesaver": use_cachesaver,
             "accuracy": round(result["mean"], 2),
             "standard error": result["sem"],
@@ -39,7 +39,7 @@ class Test1(unittest.IsolatedAsyncioTestCase):
         self.results.append(row)
     
     async def test_run_experiment_without_CacheSaver(self):
-        print("Starting experiment...")
+        print("Starting experiment with math...")
 
         values = [1, 2]
         use_cachesaver = False
@@ -51,20 +51,20 @@ class Test1(unittest.IsolatedAsyncioTestCase):
         print(configs)
         print("Number of configs: ", len(configs))
 
-        for agents, rounds, evaluation_round, model, use_cachesaver in configs:
-            print(agents, rounds, evaluation_round)
-            await self.experiment_without_CacheSaver(agents, rounds, evaluation_round, model, use_cachesaver)
+        for agents, rounds, problems, model, use_cachesaver in configs:
+            print(agents, rounds, problems)
+            await self.experiment_without_CacheSaver(agents, rounds, problems, model, use_cachesaver)
 
         dataframe = pd.DataFrame(self.results)
 
         print("\nResults:")
         print(dataframe)
         
-        dataframe.to_excel("math/Experiments/Llama4_17b/Experiment.xlsx", index=False)
+        dataframe.to_excel("math/Experiments/Llama4_17b/Experiment_math.xlsx", index=False)
 
         self.assertTrue(len(dataframe) > 0)
 
-    #async def test_without_CacheSaver_100_eval_rounds(self):
+    #async def test_without_CacheSaver_100_problems(self):
 
     #    await self.experiment_without_CacheSaver(2, 3, 3, "qwen2.5:1.5b", True)
         

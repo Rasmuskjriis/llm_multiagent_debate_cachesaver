@@ -6,6 +6,8 @@ import re
 import argparse
 import asyncio
 
+from utils.utils import calc_mean_sem_ci
+
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
     bullets = []
@@ -122,7 +124,7 @@ def most_frequent(List):
     return num
 
 async def main(file):
-    response_dict = json.load(open("gsm/results/{}".format(file), "r"))
+    response_dict = json.load(open("{}".format(file), "r"))
 
     questions = list(response_dict.keys())
 
@@ -144,7 +146,18 @@ async def main(file):
         else:
             print(gt)
 
-        print("accuracies:", np.mean(accuracies), np.std(accuracies) / (len(accuracies) ** 0.5))
+    # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
+    if len(accuracies) > 0:
+        mean, sem, ci = calc_mean_sem_ci(accuracies)
+
+    ci_low = mean-ci
+    ci_high = mean+ci
+
+    return {"mean": mean, 
+            "sem": sem,
+            "ci": (ci_low, ci_high)
+            }
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

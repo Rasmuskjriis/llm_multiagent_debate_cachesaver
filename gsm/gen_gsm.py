@@ -6,6 +6,7 @@ import asyncio
 import argparse
 
 import clients.client_strategies as clients
+from utils.utils import tokens_to_cost
 
 async def generate_answer(client, answer_context):
     try:
@@ -61,6 +62,16 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
     generated_description = {}
 
+    api_calls = 0
+
+    prompt_tokens = 0
+    completion_tokens = 0
+    total_tokens = 0
+
+    input_cost = 0
+    output_cost = 0
+    total_cost = 0
+
     test_problems = read_jsonl("gsm/data/test.jsonl")
     random.shuffle(test_problems)
 
@@ -80,6 +91,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                     agent_context.append(message)
 
                 tasks.append(generate_answer(client, agent_context))
+                api_calls += 1
 
             completions = await asyncio.gather(*tasks)
 
@@ -87,12 +99,34 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                 assistant_message = construct_assistant_message(completions[i])
                 agent_context.append(assistant_message)
 
+                usage = getattr(completions[i], "usage", None)
+
+                # Add to token count
+                prompt_tokens += usage.prompt_tokens
+                completion_tokens += usage.completion_tokens
+                total_tokens += usage.total_tokens
+
+                # Add to cost
+                input_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[0]
+                output_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[1]
+                total_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[2]
+
         generated_description[question] = (agent_contexts, answer)
 
-    json.dump(generated_description, open("gsm/results/gsm_{}_{}.json".format(agents, rounds), "w"))
+    file_name = "gsm/results/gsm_{}_{}.json".format(agents, rounds)
+    json.dump(generated_description, open(file_name, "w"))
 
-    print(answer)
-    print(agent_contexts)
+    return file_name, {"prompt_tokens": prompt_tokens, 
+            "completion_tokens": completion_tokens, 
+            "total_tokens": total_tokens,
+            "input_cost" : input_cost,
+            "output_cost" : output_cost,
+            "total_cost" : total_cost,
+            "api_calls" : api_calls
+            }
+
+    # print(answer)
+    # print(agent_contexts)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
