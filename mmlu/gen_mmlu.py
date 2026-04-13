@@ -57,7 +57,7 @@ if __name__ == "__main__":
     agents = 3
     rounds = 2
 
-    tasks = glob("/data/vision/billf/scratch/yilundu/llm_iterative_debate/mmlu/data/test/*.csv")
+    tasks = glob("mmlu/data/test/*.csv")
 
     dfs = [pd.read_csv(task) for task in tasks]
 
