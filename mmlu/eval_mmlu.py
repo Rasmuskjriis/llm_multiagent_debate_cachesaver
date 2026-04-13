@@ -154,7 +154,7 @@ async def main(file):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-f", "--file", action="store", type=str, default="gsm_1_1.json")
+    parser.add_argument("-f", "--file", action="store", type=str, default="mmlu_1_1.json")
 
     args = parser.parse_args()
 
