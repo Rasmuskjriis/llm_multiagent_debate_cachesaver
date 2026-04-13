@@ -3,6 +3,10 @@ import openai
 import numpy as np
 import time
 import re
+import argparse
+import asyncio
+
+from utils.utils import calc_mean_sem_ci
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -110,8 +114,10 @@ def most_frequent(List):
 
     return num
 
-if __name__ == "__main__":
-    response_dict = json.load(open("mmlu_personalities_3_2.json", "r"))
+async def main(file):
+    with open("{}".format(file), "r") as f:
+        response_dict = json.load(f)
+    
     questions = list(response_dict.keys())
 
     accuracies = []
@@ -124,19 +130,36 @@ if __name__ == "__main__":
             pred_solution = response[-1]['content']
 
             pred_solutions.append(pred_solution)
-            # break
-
-        # pred_solutions = pred_solutions[:1]
 
         accurate = compute_accuracy(gt, pred_solutions)
-
 
         if accurate is not None:
             accuracies.append(float(accurate))
         else:
-            import pdb
-            pdb.set_trace()
             print(gt)
 
-        print("accuracies:", np.mean(accuracies), np.std(accuracies) / (len(accuracies) ** 0.5))
+    # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
+    if len(accuracies) > 0:
+        mean, sem, ci = calc_mean_sem_ci(accuracies)
 
+    ci_low = mean-ci
+    ci_high = mean+ci
+
+    return {"mean": mean, 
+            "sem": sem,
+            "ci": (ci_low, ci_high)
+            }
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-f", "--file", action="store", type=str, default="gsm_1_1.json")
+
+    args = parser.parse_args()
+
+    asyncio.run(
+        main(
+            file=args.file
+        )
+    )
