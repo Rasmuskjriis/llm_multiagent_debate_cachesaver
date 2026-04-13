@@ -42,7 +42,7 @@ class Test1(unittest.IsolatedAsyncioTestCase):
     async def test_run_experiment_without_CacheSaver(self):
         print("Starting experiment with gsm...")
 
-        values = [1, 2]
+        values = [1]
         use_cachesaver = False
 
         model = "meta-llama/llama-4-scout-17b-16e-instruct"

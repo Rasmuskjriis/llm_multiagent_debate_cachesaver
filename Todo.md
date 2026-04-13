@@ -18,3 +18,6 @@
 
 ## mmlu
 
+
+
+[] Try running Ollama with LocalModel instead of OnlineModel to see if that fixes the batching issue and maybe also the terrible tokenizer

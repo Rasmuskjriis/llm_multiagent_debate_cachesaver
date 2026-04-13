@@ -4,16 +4,26 @@ import json
 import time
 import random
 import openai
+import asyncio
+import argparse
 
-def construct_message(agents, question, idx):
-    if len(agents) == 0:
+import clients.client_strategies as clients
+from utils.utils import tokens_to_cost
+
+def construct_message(agents_contexts, question):
+    if len(agents_contexts) == 0:
         return {"role": "user", "content": "Can you double check that your answer is correct. Put your final answer in the form (X) at the end of your response."}
 
     prefix_string = "These are the solutions to the problem from other agents: "
 
-    for agent in agents:
-        agent_response = agent[idx]["content"]
-        response = "\n\n One agent solution: ```{}```".format(agent_response)
+    # Takes the last response from each given agent and affixes it to the message
+    for agent_context in agents_contexts:
+        for msg in reversed(agent_context):
+            if msg["role"] == "assistant":
+                agent_response = msg["content"]
+                break
+
+        response = "\n\n One agent response: ```{}```".format(agent_response)
 
         prefix_string = prefix_string + response
 
@@ -22,20 +32,20 @@ def construct_message(agents, question, idx):
 
 
 def construct_assistant_message(completion):
-    content = completion["choices"][0]["message"]["content"]
+    content = completion.choices[0].message.content
     return {"role": "assistant", "content": content}
 
 
-def generate_answer(answer_context):
+async def generate_answer(client, answer_context):
     try:
-        completion = openai.ChatCompletion.create(
-                  model="gpt-3.5-turbo-0301",
-                  messages=answer_context,
-                  n=1)
-    except:
+        completion = await client.create_chat_completion(
+            messages = answer_context
+            )
+    except Exception as e:
+        print(f"An error occurred: {e}")
         print("retrying due to an error......")
-        time.sleep(20)
-        return generate_answer(answer_context)
+        await asyncio.sleep(5)
+        return await generate_answer(client, answer_context)
 
     return completion
 
@@ -53,9 +63,11 @@ def parse_question_answer(df, ix):
 
     return question, answer
 
-if __name__ == "__main__":
-    agents = 3
-    rounds = 2
+async def main(agents, rounds, problems, model, use_cachesaver):
+    if use_cachesaver:
+        client = clients.CacheSaverAsyncGroq(model=model)
+    else:
+        client = clients.GroqClient(model=model)
 
     tasks = glob("mmlu/data/test/*.csv")
 
@@ -90,3 +102,24 @@ if __name__ == "__main__":
         response_dict[question] = (agent_contexts, answer)
 
     json.dump(response_dict, open("mmlu_{}_{}.json".format(agents, rounds), "w"))
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-a", "--agents", type=int, default=2)
+    parser.add_argument("-r", "--rounds", type=int, default=3)
+    parser.add_argument("-p", "--problems", type=int, default=10)
+    parser.add_argument("-m","--model", type=str, default="qwen3:0.6b")
+    parser.add_argument("-c","--cachesaver", action="store_true", dest="use_cachesaver")
+
+    args = parser.parse_args()
+
+    asyncio.run(
+        main(
+            agents=args.agents, 
+            rounds=args.rounds,
+            problems=args.problems,
+            model=args.model,
+            use_cachesaver=args.use_cachesaver
+        )
+    )

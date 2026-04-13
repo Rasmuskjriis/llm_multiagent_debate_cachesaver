@@ -114,7 +114,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         generated_description[question] = (agent_contexts, answer)
 
     file_name = "gsm/results/gsm_{}_{}.json".format(agents, rounds)
-    json.dump(generated_description, open(file_name, "w"))
+    with open(file_name, "w") as f: 
+        json.dump(generated_description, f)
 
     return file_name, {"prompt_tokens": prompt_tokens, 
             "completion_tokens": completion_tokens, 

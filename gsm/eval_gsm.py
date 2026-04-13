@@ -124,7 +124,8 @@ def most_frequent(List):
     return num
 
 async def main(file):
-    response_dict = json.load(open("{}".format(file), "r"))
+    with open("{}".format(file), "r") as f:
+        response_dict = json.load(f)
 
     questions = list(response_dict.keys())
 
