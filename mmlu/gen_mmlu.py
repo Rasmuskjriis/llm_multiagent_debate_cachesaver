@@ -69,14 +69,25 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     else:
         client = clients.GroqClient(model=model)
 
+    random.seed(0)
+
+    response_dict = {}
+
+    api_calls = 0
+
+    prompt_tokens = 0
+    completion_tokens = 0
+    total_tokens = 0
+
+    input_cost = 0
+    output_cost = 0
+    total_cost = 0
+
     tasks = glob("mmlu/data/test/*.csv")
 
     dfs = [pd.read_csv(task) for task in tasks]
 
-    random.seed(0)
-    response_dict = {}
-
-    for i in range(100):
+    for i in range(problems):
         df = random.choice(dfs)
         ix = len(df)
         idx = random.randint(0, ix-1)
@@ -86,22 +97,52 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         agent_contexts = [[{"role": "user", "content": question}] for agent in range(agents)]
 
         for round in range(rounds):
+            tasks = []
             for i, agent_context in enumerate(agent_contexts):
 
                 if round != 0:
                     agent_contexts_other = agent_contexts[:i] + agent_contexts[i+1:]
-                    message = construct_message(agent_contexts_other, question, 2 * round - 1)
+                    message = construct_message(agent_contexts_other, question)
                     agent_context.append(message)
+                
+                tasks.append(generate_answer(client, agent_context))
+                api_calls += 1
 
-                completion = generate_answer(agent_context)
+            completions = await asyncio.gather(*tasks)
 
-                assistant_message = construct_assistant_message(completion)
+            for i, agent_context in enumerate(agent_contexts):
+                assistant_message = construct_assistant_message(completions[i])
                 agent_context.append(assistant_message)
-                print(completion)
+
+                usage = getattr(completions[i], "usage", None)
+
+                # Add to token count
+                prompt_tokens += usage.prompt_tokens
+                completion_tokens += usage.completion_tokens
+                total_tokens += usage.total_tokens
+
+                # Add to cost
+                input_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[0]
+                output_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[1]
+                total_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[2]
 
         response_dict[question] = (agent_contexts, answer)
 
-    json.dump(response_dict, open("mmlu_{}_{}.json".format(agents, rounds), "w"))
+    file_name = "mmlu_{}_{}.json".format(agents, rounds)
+    with open(file_name, "w") as f:
+        json.dump(response_dict, f)
+
+    print(answer)
+    print(agent_contexts)
+
+    return file_name, {"prompt_tokens": prompt_tokens, 
+            "completion_tokens": completion_tokens, 
+            "total_tokens": total_tokens,
+            "input_cost" : input_cost,
+            "output_cost" : output_cost,
+            "total_cost" : total_cost,
+            "api_calls" : api_calls
+            }
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
