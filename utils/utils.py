@@ -1,7 +1,6 @@
 import numpy as np
 import scipy
 
-# Should be move to a util folder
 def calc_mean_sem_ci(scores):
     n = len(scores)
     
@@ -29,6 +28,7 @@ def calc_mean_sem_ci(scores):
     return mean, sem, ci
 
 def tokens_to_cost(prompt_tokens, completion_tokens, model):
+    # Groq
     catalogue = {
         # LLama-4
         "meta-llama/llama-4-scout-17b-16e-instruct" : {"prompt_price" : 0.11, "completion_price" : 0.34},

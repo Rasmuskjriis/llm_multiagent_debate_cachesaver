@@ -65,5 +65,16 @@ class Test1(unittest.IsolatedAsyncioTestCase):
 
         self.assertTrue(len(dataframe) > 0)
 
+    # async def test_without_CacheSaver_100_problems(self):
+
+    #     await self.experiment_without_CacheSaver(1, 1, 10, "meta-llama/llama-4-scout-17b-16e-instruct", False)
+            
+    #     dataframe = pd.DataFrame(self.results)
+
+    #     print("\nResults:")
+    #     print(dataframe)
+            
+    #     dataframe.to_excel("mmlu/Experiments/Llama4_17b/Experiment_mmlu.xlsx", index=False)
+
 if __name__ == '__main__':
     unittest.main()

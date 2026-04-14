@@ -12,7 +12,7 @@ from utils.utils import tokens_to_cost
 
 def construct_message(agents_contexts, question):
     if len(agents_contexts) == 0:
-        return {"role": "user", "content": "Can you double check that your answer is correct. Put your final answer in the form (X) at the end of your response."}
+        return {"role": "user", "content": "Can you double check that your answer is correct. It is very important that you put your final answer in exactly the form (X) at the end of your response."}
 
     prefix_string = "These are the solutions to the problem from other agents: "
 
@@ -27,7 +27,7 @@ def construct_message(agents_contexts, question):
 
         prefix_string = prefix_string + response
 
-    prefix_string = prefix_string + """\n\n Using the reasoning from other agents as additional advice, can you give an updated answer? Examine your solution and that other agents step by step. Put your answer in the form (X) at the end of your response.""".format(question)
+    prefix_string = prefix_string + """\n\n Using the reasoning from other agents as additional advice, can you give an updated answer? Examine your solution and that other agents step by step. It is very important that you put your final answer in exactly the form (X) at the end of your response.""".format(question)
     return {"role": "user", "content": prefix_string}
 
 
@@ -57,7 +57,7 @@ def parse_question_answer(df, ix):
     c = df.iloc[ix, 3]
     d = df.iloc[ix, 4]
 
-    question = "Can you answer the following question as accurately as possible? {}: A) {}, B) {}, C) {}, D) {} Explain your answer, putting the answer in the form (X) at the end of your response.".format(question, a, b, c, d)
+    question = "Can you answer the following question as accurately as possible? {}: A) {}, B) {}, C) {}, D) {} Explain your answer, and it is very important that you put your final answer in exactly the form (X) at the end of your response.".format(question, a, b, c, d)
 
     answer = df.iloc[ix, 5]
 
@@ -128,8 +128,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
         response_dict[question] = (agent_contexts, answer)
 
-        print(agent_contexts)
-        print(answer)
+        # print(agent_contexts)
+        # print(answer)
 
     file_name = "mmlu/results/mmlu_{}_{}.json".format(agents, rounds)
     with open(file_name, "w") as f:
