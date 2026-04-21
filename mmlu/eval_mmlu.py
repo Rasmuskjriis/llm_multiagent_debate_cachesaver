@@ -61,18 +61,18 @@ def parse_answer(input_str):
     matches = re.findall(pattern, input_str)
 
     solution = None
-    print("predicted solution")
-    print(input_str)
-    print("matches")
-    print(matches)
+    # print("predicted solution")
+    # print(input_str)
+    # print("matches")
+    # print(matches)
 
     for match_str in matches[::-1]:
         solution = match_str.upper()
         if solution:
             break
 
-    print("final match")
-    print(solution)
+    # print("final match")
+    # print(solution)
 
     return solution
 
@@ -135,7 +135,7 @@ async def main(file):
             pred_solutions.append(pred_solution)
 
         accurate = compute_accuracy(gt, pred_solutions)
-        print("Actual solution: ", gt)
+        # print("Actual solution: ", gt)
 
         if accurate is not None:
             accuracies.append(float(accurate))

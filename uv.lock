@@ -61,7 +61,7 @@ wheels = [
 
 [[package]]
 name = "cachesaver"
-version = "0.0.5"
+version = "0.0.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anthropic" },
@@ -74,9 +74,9 @@ dependencies = [
     { name = "openai" },
     { name = "together" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/18/d1/2ad258fe2366651c48c2c6d9fd0a25961ed72204e97508f4ab48b38c0c7d/cachesaver-0.0.5.tar.gz", hash = "sha256:83a9df96fd9db827c7c9399553006d56e6b60714e2a6d2bf732a5b040fadec0b", size = 38741, upload-time = "2026-03-16T22:04:08.283Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cb/fb/61327e761f570f23abd130dc2adb8becaccd204bed72f1b5774af6d86437/cachesaver-0.0.6.tar.gz", hash = "sha256:b950e6614ce0df6e8b7bac5f8bb2152aa8db19c02db0b4562199070107205bb0", size = 38914, upload-time = "2026-04-20T16:57:03.474Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3d/12/5c551430381d87e04207322eabfc809427268106c5b3a465ef88fe43509b/cachesaver-0.0.5-py3-none-any.whl", hash = "sha256:62c2da0ae2aea82f93b36b68f262eb65eae9f051571183caebeaf6c32719ea61", size = 25590, upload-time = "2026-03-16T22:04:06.813Z" },
+    { url = "https://files.pythonhosted.org/packages/49/16/d45aae699bd280d7639b3a36dc4ede8e010ac90a1f215aa95d5c47a04df0/cachesaver-0.0.6-py3-none-any.whl", hash = "sha256:b81e042bba91c86da15d34b267a34316b53f20eaaa245ec851e2957516081b8f", size = 25728, upload-time = "2026-04-20T16:57:01.831Z" },
 ]
 
 [[package]]

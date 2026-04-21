@@ -81,7 +81,7 @@ class CacheSaverGroqClient(ClientStrategy):
         self.client = CacheSaverAsyncGroq(
             api_key = os.getenv("GROQ_API_KEY"),
             namespace="groq_" + model,
-            cachedir="./cache"
+            cachedir="./cache",
         )
         self.model = model
     
@@ -89,7 +89,8 @@ class CacheSaverGroqClient(ClientStrategy):
         return self.client.chat.completions.create(
                     messages=messages,
                     model=self.model,
-                    n=n
+                    n=n,
+                    metadata = True
         )
 
 class GroqClient(ClientStrategy):

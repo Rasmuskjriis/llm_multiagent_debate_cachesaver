@@ -29,9 +29,11 @@ def parse_bullets(sentence):
 
 async def generate_answer(client, answer_context):
     try:
-        completion = await client.create_chat_completion(
+        completion, metadata = await client.create_chat_completion(
             messages = answer_context
             )
+        print("Metadata: ", metadata)
+        
     except Exception as e:
         print(f"An error occurred: {e}")
         print("retrying due to an error......")
@@ -97,7 +99,7 @@ def most_frequent(List):
 
 async def main(agents, rounds, problems, model, use_cachesaver):
     if use_cachesaver:
-        client = clients.CacheSaverAsyncGroq(model=model)
+        client = clients.CacheSaverGroqClient(model=model)
     else:
         client = clients.GroqClient(model=model)
 
@@ -162,10 +164,10 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                 output_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[1]
                 total_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[2]
 
-                #print(f"  Round {round}, Agent {i}:")
-                #print(f"  Prompt tokens: {usage.prompt_tokens}")
-                #print(f"  Completion tokens: {usage.completion_tokens}")
-                #print(f"  Total tokens: {usage.total_tokens}")
+                print(f"  Round {round+1}, Agent {i+1}:")
+                print(f"  Prompt tokens: {usage.prompt_tokens}")
+                print(f"  Completion tokens: {usage.completion_tokens}")
+                print(f"  Total tokens: {usage.total_tokens}")
 
 
         text_answers = []
