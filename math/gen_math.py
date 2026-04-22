@@ -29,10 +29,9 @@ def parse_bullets(sentence):
 
 async def generate_answer(client, answer_context):
     try:
-        completion, metadata = await client.create_chat_completion(
+        completion = await client.create_chat_completion(
             messages = answer_context
             )
-        print("Metadata: ", metadata)
         
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -113,13 +112,15 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
     api_calls = 0
 
-    prompt_tokens = 0
-    completion_tokens = 0
-    total_tokens = 0
+    prompt_tokens_used = 0
+    completion_tokens_used = 0
+    prompt_tokens_saved = 0
+    completion_tokens_saved = 0
 
-    input_cost = 0
-    output_cost = 0
-    total_cost = 0
+    input_cost_used = 0
+    output_cost_used = 0
+    input_cost_saved = 0
+    output_cost_saved = 0
 
     mean = 0
     sem = 0
@@ -146,25 +147,34 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                 tasks.append(generate_answer(client, agent_context))
                 api_calls += 1
             
-            completions = await asyncio.gather(*tasks)
+            completions_metadata = await asyncio.gather(*tasks)
+            completions, metadata = zip(*completions_metadata)
 
             for i, agent_context in enumerate(agent_contexts):
-                assistant_message = construct_assistant_message(completions[i])
+                assistant_message = construct_assistant_message(completions[i][0])
                 agent_context.append(assistant_message)
 
                 usage = getattr(completions[i], "usage", None)
 
-                # Add to token count
-                prompt_tokens += usage.prompt_tokens
-                completion_tokens += usage.completion_tokens
-                total_tokens += usage.total_tokens
+                usage_metadata = metadata[i]
 
-                # Add to cost
-                input_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[0]
-                output_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[1]
-                total_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[2]
+                print("Usage metadata: ", usage_metadata) # for debugging
 
-                print(f"  Round {round+1}, Agent {i+1}:")
+                cached = usage_metadata.get("cached")[0]
+                duplicated = usage_metadata.get("duplicated")[0]
+
+                if cached: # If cached, all tokens are saved
+                    prompt_tokens_saved += usage.prompt_tokens
+                    completion_tokens_saved += usage.completion_tokens
+                elif duplicated: # If duped only prompt tokens are saved
+                    prompt_tokens_saved += usage.prompt_tokens
+                    completion_tokens_used += usage.completion_tokens
+                else:
+                    prompt_tokens_used += usage.prompt_tokens
+                    completion_tokens_used += usage.completion_tokens
+
+                print(f"  Round {round+1}, Agent {i+1}, problem {round}:")
+                print(f"  Cached: {cached}, Duplicated: {duplicated}")
                 print(f"  Prompt tokens: {usage.prompt_tokens}")
                 print(f"  Completion tokens: {usage.completion_tokens}")
                 print(f"  Total tokens: {usage.total_tokens}")
@@ -200,37 +210,20 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     ci_low = mean-ci
     ci_high = mean+ci
 
-    #print("CLIENT: ", client)
-
-    #print("Prompt tokens: ", prompt_tokens)
-    #print("Completion tokens: ", completion_tokens)
-    #print("Total tokens: ", total_tokens)
-
-    #print("Price -----------------")
-    #print("Model: ", model)
-
-    #print("Input cost: ", np.round(input_cost, 6))
-    #print("Output cost: ", np.round(output_cost, 6))
-    #print("Total cost: ", np.round(total_cost, 6))
-
-    #print("\nAccuracy: ", mean)
-    #print("CI: ", ci)
-
-    #print("Api calls: ", api_calls)
-
-    #print("\nConfidence interval: [", ci_low, ", ", ci_high, "]")
-
-    #print(agent_contexts)
+    input_cost_used, output_cost_used, total_cost_used = tokens_to_cost(prompt_tokens_used, completion_tokens_used, model)
+    input_cost_saved, output_cost_saved, total_cost_saved = tokens_to_cost(prompt_tokens_saved, completion_tokens_saved, model)
 
     return {"mean": mean, 
             "sem": sem,
             "ci": (ci_low, ci_high),
-            "prompt_tokens": prompt_tokens, 
-            "completion_tokens": completion_tokens, 
-            "total_tokens": total_tokens,
-            "input_cost" : input_cost,
-            "output_cost" : output_cost,
-            "total_cost" : total_cost,
+            "prompt_tokens:": prompt_tokens_used, 
+            "completion_tokens": completion_tokens_used,
+            "input_cost_used" : input_cost_used,
+            "output_cost_used" : output_cost_used,
+            "total_cost_used" : total_cost_used,
+            "input_cost_saved" : input_cost_saved,
+            "output_cost_saved" : output_cost_saved,
+            "total_cost_saved" : total_cost_saved,
             "api_calls" : api_calls
             }
 
