@@ -151,7 +151,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
             completions, metadata = zip(*completions_metadata)
 
             for i, agent_context in enumerate(agent_contexts):
-                assistant_message = construct_assistant_message(completions[i][0])
+                assistant_message = construct_assistant_message(completions[i])
                 agent_context.append(assistant_message)
 
                 usage = getattr(completions[i], "usage", None)
@@ -160,8 +160,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
                 print("Usage metadata: ", usage_metadata) # for debugging
 
-                cached = usage_metadata.get("cached")[0]
-                duplicated = usage_metadata.get("duplicated")[0]
+                cached = usage_metadata.cached[0]
+                duplicated = usage_metadata.duplicated[0]
 
                 if cached: # If cached, all tokens are saved
                     prompt_tokens_saved += usage.prompt_tokens
