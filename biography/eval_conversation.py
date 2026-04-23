@@ -2,6 +2,25 @@ import json
 import openai
 import numpy as np
 import time
+import asyncio
+import argparse
+
+import clients.client_strategies as clients
+from utils.utils import calc_mean_sem_ci, tokens_to_cost
+
+async def generate_answer(client, answer_context):
+    try:
+        completion = await client.create_chat_completion(
+            messages = answer_context
+            )
+        
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        print("retrying due to an error......")
+        await asyncio.sleep(5)
+        return await generate_answer(client, answer_context)
+
+    return completion
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -48,10 +67,16 @@ def filter_people(person):
     people = person.split("(")[0]
     return people
 
-if __name__ == "__main__":
-    response = json.load(open("biography_1_2.json", "r"))
+async def main(file, model, use_cachesaver):
+    if use_cachesaver:
+        client = clients.CacheSaverGroqClient(model=model)
+    else:
+        client = clients.GroqClient(model=model)
 
-    with open("article.json", "r") as f:
+    with open("{}".format(file), "r") as f:
+        response = json.load(f)
+        
+    with open("biography/data/article.json", "r") as f:
         gt_data = json.load(f)
 
     gt_data_filter = {}
@@ -90,20 +115,17 @@ if __name__ == "__main__":
             for bullet in gt_bullets:
                 message = [{"role": "user", "content": "Consider the following biography of {}: \n {} \n\n Is the above biography above consistent with the fact below? \n\n {} \n Give a single word answer, yes, no, or uncertain. Carefully check the precise dates and locations between the fact and the above biography.".format(person, bio_bullets, bullet)}]
 
-                try:
-                    completion = openai.ChatCompletion.create(
-                              model="gpt-3.5-turbo-0301",
-                              messages=message,
-                              n=1)
-                except Exception as e:
-                    print("sleeping")
-                    time.sleep(20)
-                    continue
+                completion_metadata = await generate_answer(client, message)
+                completion, metadata = completion_metadata
 
-                print(message)
+                print("Message: ", message)
+                print()
 
-                content = completion["choices"][0]["message"]["content"]
-                print(content)
+                content = completion.choices[0].message.content
+                print("Content: ", content)
+                print("End of content")
+                print()
+
                 accurate = parse_yes_no(content)
 
                 if accurate is not None:
@@ -111,3 +133,20 @@ if __name__ == "__main__":
 
             print("accuracies:", np.mean(accuracies), np.std(accuracies) / (len(accuracies) ** 0.5))
 
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-f", "--file", action="store", type=str, default="biography/results/biography_1_1.json")
+    parser.add_argument("-m","--model", type=str, default="qwen3:0.6b")
+    parser.add_argument("-c","--cachesaver", action="store_true", dest="use_cachesaver")
+
+    args = parser.parse_args()
+
+    asyncio.run(
+        main(
+            file=args.file,
+            model=args.model,
+            use_cachesaver=args.use_cachesaver
+        )
+    )

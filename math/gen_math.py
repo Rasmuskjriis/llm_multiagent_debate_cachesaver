@@ -24,9 +24,6 @@ def parse_bullets(sentence):
 
     return bullets
 
-# We need to use semaphore when running using CacheSavers api
-#semaphore = asyncio.Semaphore(1)
-
 async def generate_answer(client, answer_context):
     try:
         completion = await client.create_chat_completion(
@@ -148,6 +145,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                 api_calls += 1
             
             completions_metadata = await asyncio.gather(*tasks)
+            print("completion_metadata: ", completions_metadata)
             completions, metadata = zip(*completions_metadata)
 
             for i, agent_context in enumerate(agent_contexts):
