@@ -23,6 +23,9 @@
 [] Try running Ollama with LocalModel instead of OnlineModel to see if that fixes the batching issue and maybe also the terrible tokenizer
 
 
+
+
+
 [{'role': 'user', 'content': 'Give a bullet point biography of Darrell Long highlighting their contributions and achievements as a computer scientist, with each fact separated with a new line character. '},
 
 {'role': 'assistant', 'content': 

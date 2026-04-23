@@ -118,21 +118,24 @@ async def main(file, model, use_cachesaver):
                 completion_metadata = await generate_answer(client, message)
                 completion, metadata = completion_metadata
 
-                print("Message: ", message)
-                print()
-
                 content = completion.choices[0].message.content
-                print("Content: ", content)
-                print("End of content")
-                print()
 
                 accurate = parse_yes_no(content)
 
                 if accurate is not None:
                     accuracies.append(float(accurate))
 
-            print("accuracies:", np.mean(accuracies), np.std(accuracies) / (len(accuracies) ** 0.5))
+    # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
+    if len(accuracies) > 0:
+        mean, sem, ci = calc_mean_sem_ci(accuracies)
 
+    ci_low = mean-ci
+    ci_high = mean+ci
+
+    return {"mean": mean, 
+            "sem": sem,
+            "ci": (ci_low, ci_high)
+            }
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

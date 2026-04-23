@@ -86,6 +86,16 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
     generated_description = {}
 
+    api_calls = 0
+
+    prompt_tokens = 0
+    completion_tokens = 0
+    total_tokens = 0
+
+    input_cost = 0
+    output_cost = 0
+    total_cost = 0
+
     for person in tqdm(people[:problems]):
         agent_contexts = [[{"role": "user", "content": "Give a bullet point biography of {} highlighting their contributions and achievements as a computer scientist, with each fact separated with a new line character. ".format(person)}] for agent in range(agents)]
 
@@ -103,6 +113,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                     agent_context.append(message)
 
                 tasks.append(generate_answer(client, agent_context))
+                api_calls += 1
 
             completions_metadata = await asyncio.gather(*tasks)
             completions, metadata = zip(*completions_metadata)
@@ -110,6 +121,18 @@ async def main(agents, rounds, problems, model, use_cachesaver):
             for i, agent_context in enumerate(agent_contexts):
                 assistant_message = construct_assistant_message(completions[i])
                 agent_context.append(assistant_message)
+
+                usage = getattr(completions[i], "usage", None)
+
+                # Add to token count
+                prompt_tokens += usage.prompt_tokens
+                completion_tokens += usage.completion_tokens
+                total_tokens += usage.total_tokens
+
+                # Add to cost
+                input_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[0]
+                output_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[1]
+                total_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[2]
 
             bullets = parse_bullets(completions[-1].choices[0].message.content)
 
@@ -119,11 +142,20 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
         generated_description[person] = agent_contexts
 
-        print(agent_contexts)
+        #print(agent_contexts)
     
     file_name = "biography/results/biography_{}_{}.json".format(agents, rounds)
     with open(file_name, "w") as f: 
         json.dump(generated_description, f)
+
+    return file_name, {"prompt_tokens": prompt_tokens, 
+            "completion_tokens": completion_tokens, 
+            "total_tokens": total_tokens,
+            "input_cost" : input_cost,
+            "output_cost" : output_cost,
+            "total_cost" : total_cost,
+            "api_calls" : api_calls
+            }
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
