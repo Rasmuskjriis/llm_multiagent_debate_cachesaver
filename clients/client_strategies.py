@@ -11,12 +11,12 @@ from groq import AsyncGroq
 def make_dummy_metadata(n=1):
     return Metadata(
         n=n,
-        cached=False,
-        duplicated=False
+        cached=[False],
+        duplicated=[False]
     )
 
-def completion_with_metadata(client, messages, model, n):
-    completion = client.chat.completions.create(
+async def completion_with_metadata(client, messages, model, n):
+    completion = await client.chat.completions.create(
                     messages=messages,
                     model=model,
                     n=n
