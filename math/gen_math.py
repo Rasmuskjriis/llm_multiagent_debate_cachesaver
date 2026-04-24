@@ -171,7 +171,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                     prompt_tokens_used += usage.prompt_tokens
                     completion_tokens_used += usage.completion_tokens
 
-                print(f"  Round {round+1}, Agent {i+1}, problem {round}:")
+                print(f"  Round {round+1}, Agent {i+1}, problem {round+1}:")
                 print(f"  Cached: {cached}, Duplicated: {duplicated}")
                 print(f"  Prompt tokens: {usage.prompt_tokens}")
                 print(f"  Completion tokens: {usage.completion_tokens}")
@@ -214,8 +214,10 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     return {"mean": mean, 
             "sem": sem,
             "ci": (ci_low, ci_high),
-            "prompt_tokens:": prompt_tokens_used, 
-            "completion_tokens": completion_tokens_used,
+            "prompt_tokens_used" : prompt_tokens_used, 
+            "completion_tokens_used" : completion_tokens_used,
+            "prompt_tokens_saved" : prompt_tokens_saved,
+            "completion_tokens_saved" : completion_tokens_saved,
             "input_cost_used" : input_cost_used,
             "output_cost_used" : output_cost_used,
             "total_cost_used" : total_cost_used,
