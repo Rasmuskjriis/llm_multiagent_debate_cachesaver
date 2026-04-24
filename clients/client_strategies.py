@@ -4,8 +4,34 @@ import dotenv
 
 from cachesaver.models.openai import AsyncOpenAI as CacheSaverAsyncOpenAI
 from cachesaver.models.groq import AsyncGroq as CacheSaverAsyncGroq
+from cachesaver.typedefs import Metadata
 from openai import AsyncOpenAI
 from groq import AsyncGroq
+
+def make_dummy_metadata(n=1):
+    return Metadata(
+        n=n,
+        cached=[False for _ in range(n)],
+        duplicated=[False for _ in range(n)]
+    )
+
+async def completion_with_metadata(client, messages, model, n):
+    completion = await client.chat.completions.create(
+                    messages=messages,
+                    model=model,
+                    n=n
+    )
+    metadata = make_dummy_metadata(n)
+    return completion, metadata
+
+def completion_with_metadata_cachesaver(client, messages, model, n):
+    return client.chat.completions.create(
+                    messages=messages,
+                    model=model,
+                    n=n,
+                    metadata = True
+    )
+
 
 class ClientStrategy(ABC):
     @abstractmethod
@@ -23,7 +49,8 @@ class CacheSaverOllamaClient(ClientStrategy):
         self.model = model
 
     def create_chat_completion(self, messages, n=1):
-        return self.client.chat.completions.create(
+        return completion_with_metadata_cachesaver(
+                    self.client,
                     messages=messages,
                     model=self.model,
                     n=n
@@ -38,7 +65,8 @@ class OllamaClient(ClientStrategy):
         self.model = model
 
     def create_chat_completion(self, messages, n=1):
-        return self.client.chat.completions.create(
+        return completion_with_metadata(
+                    self.client,
                     messages=messages,
                     model=self.model,
                     n=n
@@ -54,7 +82,8 @@ class CacheSaverOpenAIClient(ClientStrategy):
         self.model = model
 
     def create_chat_completion(self, messages, n=1):
-        return self.client.chat.completions.create(
+        return completion_with_metadata_cachesaver(
+                    self.client,
                     messages=messages,
                     model=self.model,
                     n=n
@@ -69,7 +98,8 @@ class OpenAIClient(ClientStrategy):
         self.model = model
 
     def create_chat_completion(self, messages, n=1):
-        return self.client.chat.completions.create(
+        return completion_with_metadata(
+                    self.client,
                     messages=messages,
                     model=self.model,
                     n=n
@@ -86,11 +116,11 @@ class CacheSaverGroqClient(ClientStrategy):
         self.model = model
     
     def create_chat_completion(self, messages, n=1):
-        return self.client.chat.completions.create(
+        return completion_with_metadata_cachesaver(
+                    self.client,
                     messages=messages,
                     model=self.model,
-                    n=n,
-                    metadata = True
+                    n=n
         )
 
 class GroqClient(ClientStrategy):
@@ -102,7 +132,8 @@ class GroqClient(ClientStrategy):
         self.model = model
     
     def create_chat_completion(self, messages, n=1):
-        return self.client.chat.completions.create(
+        return completion_with_metadata(
+                    self.client,
                     messages=messages,
                     model=self.model,
                     n=n
