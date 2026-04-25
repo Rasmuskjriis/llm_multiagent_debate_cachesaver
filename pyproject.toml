@@ -19,5 +19,5 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["utils", "clients", "math", "biography", "gsm", "mmlu"]
+packages = ["experiment", "utils", "clients", "maths", "biography", "gsm", "mmlu"]
 

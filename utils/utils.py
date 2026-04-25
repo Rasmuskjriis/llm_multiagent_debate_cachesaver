@@ -1,5 +1,6 @@
 import numpy as np
 import scipy
+import os
 
 def calc_mean_sem_ci(scores):
     n = len(scores)
@@ -42,3 +43,12 @@ def tokens_to_cost(prompt_tokens, completion_tokens, model):
     total_cost = input_cost + output_cost
 
     return input_cost, output_cost, total_cost
+
+def clear_cache():
+    cache_path = "cache\cache.db"
+    try:
+        os.remove(cache_path)
+    except FileNotFoundError:
+        print(f"Could not find cache file at {cache_path}. It may have already been deleted.")
+        pass
+    

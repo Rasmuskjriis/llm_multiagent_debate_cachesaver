@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 import os
 import dotenv
 
-from cachesaver.models.openai import AsyncOpenAI as CacheSaverAsyncOpenAI
-from cachesaver.models.groq import AsyncGroq as CacheSaverAsyncGroq
+from cachesaver.models.openai import AsyncOpenAI as _CacheSaverAsyncOpenAI
+from cachesaver.models.groq import AsyncGroq as _CacheSaverAsyncGroq
 from cachesaver.typedefs import Metadata
 from openai import AsyncOpenAI
 from groq import AsyncGroq
@@ -40,7 +40,7 @@ class ClientStrategy(ABC):
 
 class CacheSaverOllamaClient(ClientStrategy):
     def __init__(self, model):
-        self.client = CacheSaverAsyncOpenAI(
+        self.client = _CacheSaverAsyncOpenAI(
             base_url='http://localhost:11434/v1/',
             api_key='ollama',  # required but ignored
             namespace="local_ollama_" + model,
@@ -74,7 +74,7 @@ class OllamaClient(ClientStrategy):
 
 class CacheSaverOpenAIClient(ClientStrategy):
     def __init__(self, model):
-        self.client = CacheSaverAsyncOpenAI(
+        self.client = _CacheSaverAsyncOpenAI(
             api_key=os.environ.get("OPENAI_API_KEY"),
             namespace="openai_" + model,
             cachedir="./cache"
@@ -108,7 +108,7 @@ class OpenAIClient(ClientStrategy):
 class CacheSaverGroqClient(ClientStrategy):
     def __init__(self, model):
         dotenv.load_dotenv()
-        self.client = CacheSaverAsyncGroq(
+        self.client = _CacheSaverAsyncGroq(
             api_key = os.getenv("GROQ_API_KEY"),
             namespace="groq_" + model,
             cachedir="./cache",
