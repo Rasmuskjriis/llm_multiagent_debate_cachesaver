@@ -166,7 +166,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                 else:
                     prompt_tokens_used += usage.prompt_tokens
                     completion_tokens_used += usage.completion_tokens
-                    api_calls += 1
+                    api_calls += 1      
 
                 #print(f"  Round {round+1}, Agent {i+1}, problem {round+1}:")
                 #print(f"  Cached: {cached}, Duplicated: {duplicated}")

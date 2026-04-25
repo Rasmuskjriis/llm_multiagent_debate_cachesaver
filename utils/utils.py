@@ -51,4 +51,12 @@ def clear_cache():
     except FileNotFoundError:
         print(f"Could not find cache file at {cache_path}. It may have already been deleted.")
         pass
-    
+
+def sanitize_model_name(model_name):
+    new_mn = ""
+    for c in model_name:
+        if c == '/':
+            new_mn += "-"
+        else:
+            new_mn += str(c)
+    return new_mn
