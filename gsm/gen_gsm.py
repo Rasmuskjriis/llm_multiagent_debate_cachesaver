@@ -65,7 +65,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     api_calls = 0
 
     prompt_tokens_used = 0
-    prompt_tokens_used = 0
+    prompt_tokens_saved = 0
     completion_tokens_used = 0
     completion_tokens_saved = 0
 
@@ -93,7 +93,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                     agent_context.append(message)
 
                 tasks.append(generate_answer(client, agent_context))
-                api_calls += 1
 
             completions_metadata = await asyncio.gather(*tasks)
             completions, metadata = zip(*completions_metadata)
@@ -137,8 +136,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
             "completion_tokens_saved" : completion_tokens_saved,
             "input_cost_used" : input_cost_used,
             "output_cost_saved" : output_cost_saved,
-            "total_cost_used" : total_cost_used,
-            "total_cost_saved" : total_cost_saved,
             "api_calls" : api_calls
             }
 

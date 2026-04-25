@@ -53,25 +53,25 @@ async def run_gsm_experiment(model, size_of_experiment, results_df):
     rounds = 2
     problems = int(100 * size_of_experiment)
 
-    c_file_name, c_metrics = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
-    c_eval = await eval_gsm_main(file=c_file_name)
-    c_res = {**c_eval, **c_metrics}
+    #c_file_name, c_metrics = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
+    #c_eval = await eval_gsm_main(file=c_file_name)
+    #c_res = {**c_eval, **c_metrics}
 
     nc_file_name, nc_metrics = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=False)    
     nc_eval = await eval_gsm_main(file=nc_file_name)
     nc_res = {**nc_eval, **nc_metrics}
 
 
-    c_row = make_result_row(agents, rounds, problems, model, c_res)
+    #c_row = make_result_row(agents, rounds, problems, model, c_res)
     nc_row = make_result_row(agents, rounds, problems, model, nc_res)
 
     results_df["grade school math problems"] = results_df.index.map(nc_row)
-    results_df["grade school math problems w. CacheSaver"] = results_df.index.map(c_row)
+    #results_df["grade school math problems w. CacheSaver"] = results_df.index.map(c_row)
 
     return results_df
 
 async def main(model, size_of_experiment):
-    clear_cache()
+    #clear_cache()
 
     results_df = pd.DataFrame()
 
@@ -95,9 +95,9 @@ async def main(model, size_of_experiment):
                         "cost_saved ($)"]
     
     results_df = await run_gen_math_experiment(model, size_of_experiment, results_df)
-    #results_df = await run_gsm_experiment(model, size_of_experiment, results_df)
+    results_df = await run_gsm_experiment(model, size_of_experiment, results_df)
 
-    results_df = results_df.T
+    #results_df = results_df.T
     results_df.to_excel(f"experiment/{sanitize_model_name(model)}_Experiment.xlsx", index=True)
     
 if __name__ == "__main__":
