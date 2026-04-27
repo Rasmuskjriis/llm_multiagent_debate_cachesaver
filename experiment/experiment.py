@@ -60,11 +60,11 @@ async def run_gsm_experiment(model, size_of_experiment, results_df):
 
     nc_file_name, nc_metrics = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=False)    
     nc_eval = await eval_gsm_main(file=nc_file_name)
-    nc_res = {**nc_eval, **nc_metrics}
+    nc_res = nc_eval | nc_metrics
 
     #c_file_name, c_metrics = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
     #c_eval = await eval_gsm_main(file=c_file_name)
-    #c_res = {**c_eval, **c_metrics}
+    #c_res = c_eval | c_metrics
 
     nc_row = make_result_row(agents, rounds, problems, model, nc_res)
     #c_row = make_result_row(agents, rounds, problems, model, c_res)
@@ -81,11 +81,25 @@ async def run_biography_experiment(model, size_of_experiment, results_df):
 
     nc_file_name, nc_metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=False)    
     nc_eval = await eval_conversation_main(file=nc_file_name, model=model, use_cachesaver=False)
-    nc_res = {**nc_eval, **nc_metrics}
+
+    nc_metrics["prompt_tokens_used"] += nc_eval["prompt_tokens_used"]
+    nc_metrics["prompt_tokens_saved"] += nc_eval["prompt_tokens_saved"]
+    nc_metrics["completion_tokens_used"] += nc_eval["completion_tokens_used"]
+    nc_metrics["completion_tokens_saved"] += nc_eval["completion_tokens_saved"]
+    nc_metrics["api_calls"] += nc_eval["api_calls"]
+
+    nc_res = nc_eval | nc_metrics
 
     #c_file_name, c_metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
-    #c_eval = await eval_conversation_main(file=c_file_name)
-    #c_res = {**c_eval, **c_metrics}
+    #c_eval = await eval_conversation_main(file=c_file_name, model=model, use_cachesaver=True)
+
+    #c_metrics["prompt_tokens_used"] += c_eval["prompt_tokens_used"]
+    #c_metrics["prompt_tokens_saved"] += c_eval["prompt_tokens_saved"]
+    #c_metrics["completion_tokens_used"] += c_eval["completion_tokens_used"]
+    #c_metrics["completion_tokens_saved"] += c_eval["completion_tokens_saved"]
+    #c_metrics["api_calls"] += c_eval["api_calls"]
+
+    #c_res = c_eval | c_metrics
 
     nc_row = make_result_row(agents, rounds, problems, model, nc_res)
     #c_row = make_result_row(agents, rounds, problems, model, c_res)
@@ -102,11 +116,11 @@ async def run_mmlu_experiment(model, size_of_experiment, results_df):
 
     nc_file_name, nc_metrics = await gen_mmlu_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=False)    
     nc_eval = await eval_mmlu_main(file=nc_file_name)  
-    nc_res = {**nc_eval, **nc_metrics}
+    nc_res = nc_eval | nc_metrics
 
     #c_file_name, c_metrics = await gen_mmlu_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
     #c_eval = await eval_mmlu_main(file=c_file_name)
-    #c_res = {**c_eval, **c_metrics}
+    #c_res = c_eval | c_metrics
 
     nc_row = make_result_row(agents, rounds, problems, model, nc_res)
     #c_row = make_result_row(agents, rounds, problems, model, c_res)
