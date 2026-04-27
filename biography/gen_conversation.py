@@ -141,8 +141,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                 break
 
         generated_description[person] = agent_contexts
-
-        #print(agent_contexts)
     
     file_name = "biography/results/biography_{}_{}.json".format(agents, rounds)
     with open(file_name, "w") as f: 

@@ -80,11 +80,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     completion_tokens_used = 0
     completion_tokens_saved = 0
 
-    input_cost_used = 0
-    output_cost_used = 0
-    input_cost_saved = 0
-    output_cost_saved = 0
-
     tasks = glob("mmlu/data/test/*.csv")
 
     dfs = [pd.read_csv(task) for task in tasks]
@@ -108,7 +103,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                     agent_context.append(message)
                 
                 tasks.append(generate_answer(client, agent_context))
-                api_calls += 1
 
             completions_metadata = await asyncio.gather(*tasks)
             completions, metadata = zip(*completions_metadata)
@@ -133,11 +127,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                     completion_tokens_used += usage.completion_tokens
                     api_calls += 1      
 
-                # Add to cost
-                #input_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[0]
-                #output_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[1]
-                #total_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[2]
-
         response_dict[question] = (agent_contexts, answer)
 
         print(agent_contexts)
@@ -151,10 +140,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
             "prompt_tokens_saved": prompt_tokens_saved,
             "completion_tokens_used": completion_tokens_used,
             "completion_tokens_saved": completion_tokens_saved,
-            "input_cost_used" : input_cost_used,
-            "output_cost_used" : output_cost_used,
-            "input_cost_saved" : input_cost_saved,
-            "output_cost_saved" : output_cost_saved,
             "api_calls" : api_calls
             }
 

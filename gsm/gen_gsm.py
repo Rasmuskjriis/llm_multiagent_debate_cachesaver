@@ -139,8 +139,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
             "api_calls" : api_calls
             }
 
-    # print(answer)
-    # print(agent_contexts)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
