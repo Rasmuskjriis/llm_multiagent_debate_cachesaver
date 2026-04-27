@@ -10,7 +10,7 @@ from utils.utils import tokens_to_cost
 
 async def generate_answer(client, answer_context):
     try:
-        completion = await client.create_chat_completion(
+        completion, metadata = await client.create_chat_completion(
             messages = answer_context
             )
     except Exception as e:
@@ -19,7 +19,7 @@ async def generate_answer(client, answer_context):
         await asyncio.sleep(5)
         return await generate_answer(client, answer_context)
 
-    return completion
+    return completion, metadata
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -113,7 +113,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                     agent_context.append(message)
 
                 tasks.append(generate_answer(client, agent_context))
-                api_calls += 1
 
             completions_metadata = await asyncio.gather(*tasks)
             completions, metadata = zip(*completions_metadata)
@@ -124,15 +123,24 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
                 usage = getattr(completions[i], "usage", None)
 
-                # Add to token count
-                prompt_tokens += usage.prompt_tokens
-                completion_tokens += usage.completion_tokens
-                total_tokens += usage.total_tokens
+                cached = metadata[i].cached
+                duplicated = metadata[i].duplicated
+
+                if cached: # If cached, all tokens are saved
+                    prompt_tokens_saved += usage.prompt_tokens
+                    completion_tokens_saved += usage.completion_tokens
+                elif duplicated: # If duped only prompt tokens are saved
+                    prompt_tokens_saved += usage.prompt_tokens
+                    completion_tokens_used += usage.completion_tokens
+                else:
+                    prompt_tokens_used += usage.prompt_tokens
+                    completion_tokens_used += usage.completion_tokens
+                    api_calls += 1      
 
                 # Add to cost
-                input_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[0]
-                output_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[1]
-                total_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[2]
+                # input_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[0]
+                # output_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[1]
+                # total_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[2]
 
             bullets = parse_bullets(completions[-1].choices[0].message.content)
 
