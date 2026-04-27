@@ -101,7 +101,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
-    np.random.seed(0) # should be removed when we do our experiment
+    np.random.seed(0)
 
     scores = []
 
@@ -113,15 +113,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     completion_tokens_used = 0
     prompt_tokens_saved = 0
     completion_tokens_saved = 0
-
-    input_cost_used = 0
-    output_cost_used = 0
-    input_cost_saved = 0
-    output_cost_saved = 0
-
-    mean = 0
-    sem = 0
-    ci = 0
 
     for round in tqdm(range(problems)):
         a, b, c, d, e, f = np.random.randint(50, 200, size=6)
@@ -168,13 +159,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                     completion_tokens_used += usage.completion_tokens
                     api_calls += 1      
 
-                #print(f"  Round {round+1}, Agent {i+1}, problem {round+1}:")
-                #print(f"  Cached: {cached}, Duplicated: {duplicated}")
-                #print(f"  Prompt tokens: {usage.prompt_tokens}")
-                #print(f"  Completion tokens: {usage.completion_tokens}")
-                #print(f"  Total tokens: {usage.total_tokens}")
-
-
         text_answers = []
 
         for agent_context in agent_contexts:
@@ -198,6 +182,10 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         except:
             continue
 
+    mean = 0
+    sem = 0
+    ci = 0
+
     # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
     if len(text_answers) > 0 and len(scores) > 0:
         mean, sem, ci = calc_mean_sem_ci(scores)
@@ -205,22 +193,13 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     ci_low = mean-ci
     ci_high = mean+ci
 
-    input_cost_used, output_cost_used, total_cost_used = tokens_to_cost(prompt_tokens_used, completion_tokens_used, model)
-    input_cost_saved, output_cost_saved, total_cost_saved = tokens_to_cost(prompt_tokens_saved, completion_tokens_saved, model)
-
     return {"mean": mean, 
             "sem": sem,
             "ci": (ci_low, ci_high),
             "prompt_tokens_used" : prompt_tokens_used, 
-            "completion_tokens_used" : completion_tokens_used,
             "prompt_tokens_saved" : prompt_tokens_saved,
+            "completion_tokens_used" : completion_tokens_used,
             "completion_tokens_saved" : completion_tokens_saved,
-            "input_cost_used" : input_cost_used,
-            "output_cost_used" : output_cost_used,
-            "total_cost_used" : total_cost_used,
-            "input_cost_saved" : input_cost_saved,
-            "output_cost_saved" : output_cost_saved,
-            "total_cost_saved" : total_cost_saved,
             "api_calls" : api_calls
             }
 
