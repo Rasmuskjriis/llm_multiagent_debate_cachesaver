@@ -88,13 +88,15 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
     api_calls = 0
 
-    prompt_tokens = 0
-    completion_tokens = 0
-    total_tokens = 0
+    prompt_tokens_used = 0
+    prompt_tokens_saved = 0
+    completion_tokens_used = 0
+    completion_tokens_saved = 0
 
-    input_cost = 0
-    output_cost = 0
-    total_cost = 0
+    input_cost_used = 0
+    output_cost_used = 0
+    input_cost_saved = 0
+    output_cost_saved = 0
 
     for person in tqdm(people[:problems]):
         agent_contexts = [[{"role": "user", "content": "Give a bullet point biography of {} highlighting their contributions and achievements as a computer scientist, with each fact separated with a new line character. ".format(person)}] for agent in range(agents)]
@@ -156,12 +158,14 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     with open(file_name, "w") as f: 
         json.dump(generated_description, f)
 
-    return file_name, {"prompt_tokens": prompt_tokens, 
-            "completion_tokens": completion_tokens, 
-            "total_tokens": total_tokens,
-            "input_cost" : input_cost,
-            "output_cost" : output_cost,
-            "total_cost" : total_cost,
+    return file_name, {"prompt_tokens_used": prompt_tokens_used,
+            "prompt_tokens_saved": prompt_tokens_saved,
+            "completion_tokens_used": completion_tokens_used,
+            "completion_tokens_saved": completion_tokens_saved,
+            "input_cost_used" : input_cost_used,
+            "output_cost_used" : output_cost_used,
+            "input_cost_saved" : input_cost_saved,
+            "output_cost_saved" : output_cost_saved,
             "api_calls" : api_calls
             }
 
