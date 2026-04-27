@@ -119,9 +119,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
                 usage = getattr(completions[i], "usage", None)
 
-                cached = metadata[i].cached
-
-                duplicated = metadata[i].duplicated
+                cached = metadata[i].cached[0]
+                duplicated = metadata[i].duplicated[0]
 
                 if cached: # If cached, all tokens are saved
                     prompt_tokens_saved += usage.prompt_tokens

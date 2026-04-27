@@ -93,11 +93,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     completion_tokens_used = 0
     completion_tokens_saved = 0
 
-    input_cost_used = 0
-    output_cost_used = 0
-    input_cost_saved = 0
-    output_cost_saved = 0
-
     for person in tqdm(people[:problems]):
         agent_contexts = [[{"role": "user", "content": "Give a bullet point biography of {} highlighting their contributions and achievements as a computer scientist, with each fact separated with a new line character. ".format(person)}] for agent in range(agents)]
 
@@ -125,8 +120,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
                 usage = getattr(completions[i], "usage", None)
 
-                cached = metadata[i].cached
-                duplicated = metadata[i].duplicated
+                cached = metadata[i].cached[0]
+                duplicated = metadata[i].duplicated[0]
 
                 if cached: # If cached, all tokens are saved
                     prompt_tokens_saved += usage.prompt_tokens
@@ -138,11 +133,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                     prompt_tokens_used += usage.prompt_tokens
                     completion_tokens_used += usage.completion_tokens
                     api_calls += 1      
-
-                # Add to cost
-                # input_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[0]
-                # output_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[1]
-                # total_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[2]
 
             bullets = parse_bullets(completions[-1].choices[0].message.content)
 
@@ -162,10 +152,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
             "prompt_tokens_saved": prompt_tokens_saved,
             "completion_tokens_used": completion_tokens_used,
             "completion_tokens_saved": completion_tokens_saved,
-            "input_cost_used" : input_cost_used,
-            "output_cost_used" : output_cost_used,
-            "input_cost_saved" : input_cost_saved,
-            "output_cost_saved" : output_cost_saved,
             "api_calls" : api_calls
             }
 

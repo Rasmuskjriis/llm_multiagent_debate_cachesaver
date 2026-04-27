@@ -140,16 +140,16 @@ async def main(model, size_of_experiment):
                         "cost ($)", 
                         "cost_saved ($)"]
     
-    results_df = await run_gen_math_experiment(model, size_of_experiment, results_df)
-    results_df.to_excel(f"experiment/{sanitize_model_name(model)}_Experiment.xlsx", index=True)
+    #results_df = await run_gen_math_experiment(model, size_of_experiment, results_df)
+    #results_df.to_excel(f"experiment/{sanitize_model_name(model)}_Experiment.xlsx", index=True)
 
-    results_df = await run_gsm_experiment(model, size_of_experiment, results_df)
-    results_df.to_excel(f"experiment/{sanitize_model_name(model)}_Experiment.xlsx", index=True)
+    #results_df = await run_gsm_experiment(model, size_of_experiment, results_df)
+    #results_df.to_excel(f"experiment/{sanitize_model_name(model)}_Experiment.xlsx", index=True)
 
     results_df = await run_biography_experiment(model, size_of_experiment, results_df)
     results_df.to_excel(f"experiment/{sanitize_model_name(model)}_Experiment.xlsx", index=True)
 
-    results_df = await run_mmlu_experiment(model, size_of_experiment, results_df)
+    #results_df = await run_mmlu_experiment(model, size_of_experiment, results_df)
 
     print(results_df)
     results_df.to_excel(f"experiment/{sanitize_model_name(model)}_Experiment.xlsx", index=True)
