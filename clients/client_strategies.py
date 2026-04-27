@@ -5,8 +5,8 @@ import dotenv
 from cachesaver.models.openai import AsyncOpenAI as _CacheSaverAsyncOpenAI
 from cachesaver.models.groq import AsyncGroq as _CacheSaverAsyncGroq
 from cachesaver.typedefs import Metadata
-from openai import AsyncOpenAI
-from groq import AsyncGroq
+from openai import AsyncOpenAI as _AsyncOpenAI
+from groq import AsyncGroq as _AsyncGroq
 
 def make_dummy_metadata(n=1):
     return Metadata(
@@ -58,7 +58,7 @@ class CacheSaverOllamaClient(ClientStrategy):
 
 class OllamaClient(ClientStrategy):
     def __init__(self, model):
-        self.client = AsyncOpenAI(
+        self.client = _AsyncOpenAI(
             base_url='http://localhost:11434/v1/',
             api_key='ollama',  # required but ignored
         )
@@ -92,7 +92,7 @@ class CacheSaverOpenAIClient(ClientStrategy):
 
 class OpenAIClient(ClientStrategy):
     def __init__(self, model):
-        self.client = AsyncOpenAI(
+        self.client = _AsyncOpenAI(
             api_key=os.environ.get("OPENAI_API_KEY")
         )
         self.model = model
@@ -126,7 +126,7 @@ class CacheSaverGroqClient(ClientStrategy):
 class GroqClient(ClientStrategy):
     def __init__(self, model):
         dotenv.load_dotenv()
-        self.client = AsyncGroq(
+        self.client = _AsyncGroq(
             api_key = os.getenv("GROQ_API_KEY")
         )
         self.model = model

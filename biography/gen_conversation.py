@@ -72,7 +72,7 @@ def construct_assistant_message(completion):
 
 async def main(agents, rounds, problems, model, use_cachesaver):
     if use_cachesaver:
-        client = clients.CacheSaverAsyncGroq(model=model)
+        client = clients.CacheSaverGroqClient(model=model)
     else:
         client = clients.GroqClient(model=model)
 
