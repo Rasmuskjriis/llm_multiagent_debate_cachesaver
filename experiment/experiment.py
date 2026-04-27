@@ -62,15 +62,15 @@ async def run_gsm_experiment(model, size_of_experiment, results_df):
     nc_eval = await eval_gsm_main(file=nc_file_name)
     nc_res = {**nc_eval, **nc_metrics}
 
-    c_file_name, c_metrics = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
-    c_eval = await eval_gsm_main(file=c_file_name)
-    c_res = {**c_eval, **c_metrics}
+    #c_file_name, c_metrics = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
+    #c_eval = await eval_gsm_main(file=c_file_name)
+    #c_res = {**c_eval, **c_metrics}
 
     nc_row = make_result_row(agents, rounds, problems, model, nc_res)
-    c_row = make_result_row(agents, rounds, problems, model, c_res)
+    #c_row = make_result_row(agents, rounds, problems, model, c_res)
 
     results_df["grade school math problems"] = results_df.index.map(nc_row)
-    results_df["grade school math problems w. CacheSaver"] = results_df.index.map(c_row)
+    #results_df["grade school math problems w. CacheSaver"] = results_df.index.map(c_row)
 
     return results_df
 
@@ -80,18 +80,18 @@ async def run_biography_experiment(model, size_of_experiment, results_df):
     problems = int(100 * size_of_experiment)
 
     nc_file_name, nc_metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=False)    
-    nc_eval = await eval_conversation_main(file=nc_file_name)
+    nc_eval = await eval_conversation_main(file=nc_file_name, model=model, use_cachesaver=False)
     nc_res = {**nc_eval, **nc_metrics}
 
-    c_file_name, c_metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
-    c_eval = await eval_conversation_main(file=c_file_name)
-    c_res = {**c_eval, **c_metrics}
+    #c_file_name, c_metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
+    #c_eval = await eval_conversation_main(file=c_file_name)
+    #c_res = {**c_eval, **c_metrics}
 
     nc_row = make_result_row(agents, rounds, problems, model, nc_res)
-    c_row = make_result_row(agents, rounds, problems, model, c_res)
+    #c_row = make_result_row(agents, rounds, problems, model, c_res)
 
     results_df["biography problems"] = results_df.index.map(nc_row)
-    results_df["biography problems w. CacheSaver"] = results_df.index.map(c_row)
+    #results_df["biography problems w. CacheSaver"] = results_df.index.map(c_row)
 
     return results_df
 
@@ -104,20 +104,20 @@ async def run_mmlu_experiment(model, size_of_experiment, results_df):
     nc_eval = await eval_mmlu_main(file=nc_file_name)  
     nc_res = {**nc_eval, **nc_metrics}
 
-    c_file_name, c_metrics = await gen_mmlu_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
-    c_eval = await eval_mmlu_main(file=c_file_name)
-    c_res = {**c_eval, **c_metrics}
+    #c_file_name, c_metrics = await gen_mmlu_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
+    #c_eval = await eval_mmlu_main(file=c_file_name)
+    #c_res = {**c_eval, **c_metrics}
 
     nc_row = make_result_row(agents, rounds, problems, model, nc_res)
-    c_row = make_result_row(agents, rounds, problems, model, c_res)
+    #c_row = make_result_row(agents, rounds, problems, model, c_res)
 
     results_df["mmlu problems"] = results_df.index.map(nc_row)
-    results_df["mmlu problems w. CacheSaver"] = results_df.index.map(c_row)
+    #results_df["mmlu problems w. CacheSaver"] = results_df.index.map(c_row)
 
     return results_df
 
 async def main(model, size_of_experiment):
-    #clear_cache()
+    clear_cache()
 
     results_df = pd.DataFrame()
 
@@ -131,7 +131,7 @@ async def main(model, size_of_experiment):
                         "confidence interval",
                         "input_tokens_used", 
                         "input_tokens_saved", 
-                        "input_ cost ($)", 
+                        "input_cost ($)", 
                         "input_cost_saved ($)", 
                         "output_tokens_used", 
                         "output_tokens_saved", 
