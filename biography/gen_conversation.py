@@ -71,11 +71,6 @@ def construct_assistant_message(completion):
 
 
 async def main(agents, rounds, problems, model, use_cachesaver):
-    if use_cachesaver:
-        client = clients.CacheSaverGroqClient(model=model)
-    else:
-        client = clients.GroqClient(model=model)
-
     with open("biography/data/article.json", "r") as f:
         data = json.load(f)
 
@@ -97,6 +92,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         agent_contexts = [[{"role": "user", "content": "Give a bullet point biography of {} highlighting their contributions and achievements as a computer scientist, with each fact separated with a new line character. ".format(person)}] for agent in range(agents)]
 
         for round in range(rounds):
+            client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
+
             tasks = []
             for i, agent_context in enumerate(agent_contexts):
 

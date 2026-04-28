@@ -64,11 +64,6 @@ def parse_question_answer(df, ix):
     return question, answer
 
 async def main(agents, rounds, problems, model, use_cachesaver):
-    if use_cachesaver:
-        client = clients.CacheSaverAsyncGroq(model=model)
-    else:
-        client = clients.GroqClient(model=model)
-
     random.seed(0)
 
     response_dict = {}
@@ -94,6 +89,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         agent_contexts = [[{"role": "user", "content": question}] for agent in range(agents)]
 
         for round in range(rounds):
+            client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
+
             tasks = []
             for i, agent_context in enumerate(agent_contexts):
 

@@ -53,11 +53,6 @@ def read_jsonl(path: str):
 
 
 async def main(agents, rounds, problems, model, use_cachesaver):
-    if use_cachesaver:
-        client = clients.CacheSaverAsyncGroq(model=model)
-    else:
-        client = clients.GroqClient(model=model)
-
     random.seed(0)
 
     generated_description = {}
@@ -84,6 +79,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         agent_contexts = [[{"role": "user", "content": """Can you solve the following math problem? {} Explain your reasoning. Your final answer should be a single numerical number, in the form \\boxed{{answer}}, at the end of your response. """.format(question)}] for agent in range(agents)]
 
         for round in range(rounds):
+            client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
+
             tasks = []
             for i, agent_context in enumerate(agent_contexts):
 

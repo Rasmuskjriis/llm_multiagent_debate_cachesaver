@@ -68,11 +68,6 @@ def filter_people(person):
     return people
 
 async def main(file, model, use_cachesaver):
-    if use_cachesaver:
-        client = clients.CacheSaverGroqClient(model=model)
-    else:
-        client = clients.GroqClient(model=model)
-
     with open("{}".format(file), "r") as f:
         response = json.load(f)
         
@@ -108,6 +103,7 @@ async def main(file, model, use_cachesaver):
         bio_descriptions = response[person]# [2][-1]['content']
 
         for description in bio_descriptions:
+            client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
 
             bio_description = description[-1]['content']
 

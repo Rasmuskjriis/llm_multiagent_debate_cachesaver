@@ -140,7 +140,8 @@ async def main(file):
         if accurate is not None:
             accuracies.append(float(accurate))
         else:
-            print(gt)
+            # print(gt) # we dont want to print in experiment
+            pass
 
     # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
     if len(accuracies) > 0:

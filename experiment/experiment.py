@@ -43,13 +43,15 @@ async def run_gen_math_experiment(model, size_of_experiment, results_df):
     eval_rounds = int(100 * size_of_experiment)
 
     nc_res = await gen_math_main(agents=agents, rounds=rounds, problems=eval_rounds, model=model, use_cachesaver=False)
-    #c_res = await gen_math_main(agents=agents, rounds=rounds, problems=eval_rounds, model=model, use_cachesaver=True)
-
     nc_row = make_result_row(agents, rounds, eval_rounds, model, nc_res)
-    #c_row = make_result_row(agents, rounds, eval_rounds, model, c_res)
+    print(f"gen_math cost: {nc_row["cost ($)"]}")
+
+    c_res = await gen_math_main(agents=agents, rounds=rounds, problems=eval_rounds, model=model, use_cachesaver=True)
+    c_row = make_result_row(agents, rounds, eval_rounds, model, c_res)
+    print(f"gen_math cost with CacheSaver: {c_row["cost ($)"]}")
 
     results_df["basic math problems"] = results_df.index.map(nc_row)
-    #results_df["basic math problems w. CacheSaver"] = results_df.index.map(c_row)
+    results_df["basic math problems w. CacheSaver"] = results_df.index.map(c_row)
 
     return results_df
 
@@ -61,16 +63,17 @@ async def run_gsm_experiment(model, size_of_experiment, results_df):
     nc_file_name, nc_metrics = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=False)    
     nc_eval = await eval_gsm_main(file=nc_file_name)
     nc_res = nc_eval | nc_metrics
-
-    #c_file_name, c_metrics = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
-    #c_eval = await eval_gsm_main(file=c_file_name)
-    #c_res = c_eval | c_metrics
-
     nc_row = make_result_row(agents, rounds, problems, model, nc_res)
-    #c_row = make_result_row(agents, rounds, problems, model, c_res)
+    print("GSM cost:", nc_row["cost ($)"])
+
+    c_file_name, c_metrics = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
+    c_eval = await eval_gsm_main(file=c_file_name)
+    c_res = c_eval | c_metrics
+    c_row = make_result_row(agents, rounds, problems, model, c_res)
+    print("GSM cost with CacheSaver:", c_row["cost ($)"])
 
     results_df["grade school math problems"] = results_df.index.map(nc_row)
-    #results_df["grade school math problems w. CacheSaver"] = results_df.index.map(c_row)
+    results_df["grade school math problems w. CacheSaver"] = results_df.index.map(c_row)
 
     return results_df
 
@@ -89,23 +92,24 @@ async def run_biography_experiment(model, size_of_experiment, results_df):
     nc_metrics["api_calls"] += nc_eval["api_calls"]
 
     nc_res = nc_eval | nc_metrics
-
-    #c_file_name, c_metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
-    #c_eval = await eval_conversation_main(file=c_file_name, model=model, use_cachesaver=True)
-
-    #c_metrics["prompt_tokens_used"] += c_eval["prompt_tokens_used"]
-    #c_metrics["prompt_tokens_saved"] += c_eval["prompt_tokens_saved"]
-    #c_metrics["completion_tokens_used"] += c_eval["completion_tokens_used"]
-    #c_metrics["completion_tokens_saved"] += c_eval["completion_tokens_saved"]
-    #c_metrics["api_calls"] += c_eval["api_calls"]
-
-    #c_res = c_eval | c_metrics
-
     nc_row = make_result_row(agents, rounds, problems, model, nc_res)
-    #c_row = make_result_row(agents, rounds, problems, model, c_res)
+    print("Biography cost:", nc_row["cost ($)"])
+
+    c_file_name, c_metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
+    c_eval = await eval_conversation_main(file=c_file_name, model=model, use_cachesaver=True)
+
+    c_metrics["prompt_tokens_used"] += c_eval["prompt_tokens_used"]
+    c_metrics["prompt_tokens_saved"] += c_eval["prompt_tokens_saved"]
+    c_metrics["completion_tokens_used"] += c_eval["completion_tokens_used"]
+    c_metrics["completion_tokens_saved"] += c_eval["completion_tokens_saved"]
+    c_metrics["api_calls"] += c_eval["api_calls"]
+
+    c_res = c_eval | c_metrics
+    c_row = make_result_row(agents, rounds, problems, model, c_res)
+    print("Biography cost with CacheSaver:", c_row["cost ($)"])
 
     results_df["biography problems"] = results_df.index.map(nc_row)
-    #results_df["biography problems w. CacheSaver"] = results_df.index.map(c_row)
+    results_df["biography problems w. CacheSaver"] = results_df.index.map(c_row)
 
     return results_df
 
@@ -117,16 +121,17 @@ async def run_mmlu_experiment(model, size_of_experiment, results_df):
     nc_file_name, nc_metrics = await gen_mmlu_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=False)    
     nc_eval = await eval_mmlu_main(file=nc_file_name)  
     nc_res = nc_eval | nc_metrics
-
-    #c_file_name, c_metrics = await gen_mmlu_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
-    #c_eval = await eval_mmlu_main(file=c_file_name)
-    #c_res = c_eval | c_metrics
-
     nc_row = make_result_row(agents, rounds, problems, model, nc_res)
-    #c_row = make_result_row(agents, rounds, problems, model, c_res)
+    print("MMLU cost:", nc_row["cost ($)"])
+
+    c_file_name, c_metrics = await gen_mmlu_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=True)
+    c_eval = await eval_mmlu_main(file=c_file_name)
+    c_res = c_eval | c_metrics
+    c_row = make_result_row(agents, rounds, problems, model, c_res)
+    print("MMLU cost with CacheSaver:", c_row["cost ($)"])
 
     results_df["mmlu problems"] = results_df.index.map(nc_row)
-    #results_df["mmlu problems w. CacheSaver"] = results_df.index.map(c_row)
+    results_df["mmlu problems w. CacheSaver"] = results_df.index.map(c_row)
 
     return results_df
 

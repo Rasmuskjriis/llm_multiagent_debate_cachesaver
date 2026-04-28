@@ -5,7 +5,7 @@ import re
 import asyncio
 
 import clients.client_strategies as clients
-from utils.utils import calc_mean_sem_ci, tokens_to_cost
+from utils.utils import calc_mean_sem_ci, make_random_ns, tokens_to_cost, make_random_ns
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -94,10 +94,6 @@ def most_frequent(List):
 
 
 async def main(agents, rounds, problems, model, use_cachesaver):
-    if use_cachesaver:
-        client = clients.CacheSaverGroqClient(model=model)
-    else:
-        client = clients.GroqClient(model=model)
 
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
@@ -124,6 +120,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         question_prompt = "We seek to find the result of {}+{}*{}+{}-{}*{}?".format(a, b, c, d, e, f)
 
         for round in range(rounds):
+            client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
+
             tasks = []
             for i, agent_context in enumerate(agent_contexts):
 

@@ -2,11 +2,15 @@ from abc import ABC, abstractmethod
 import os
 import dotenv
 
+from utils.utils import make_random_ns
+
 from cachesaver.models.openai import AsyncOpenAI as _CacheSaverAsyncOpenAI
 from cachesaver.models.groq import AsyncGroq as _CacheSaverAsyncGroq
 from cachesaver.typedefs import Metadata
 from openai import AsyncOpenAI as _AsyncOpenAI
 from groq import AsyncGroq as _AsyncGroq
+
+dotenv.load_dotenv()
 
 def make_dummy_metadata(n=1):
     return Metadata(
@@ -39,11 +43,11 @@ class ClientStrategy(ABC):
         pass
 
 class CacheSaverOllamaClient(ClientStrategy):
-    def __init__(self, model):
+    def __init__(self, model, ns=""):
         self.client = _CacheSaverAsyncOpenAI(
             base_url='http://localhost:11434/v1/',
             api_key='ollama',  # required but ignored
-            namespace="local_ollama_" + model,
+            namespace=ns,
             cachedir="./cache"
         )
         self.model = model
@@ -73,10 +77,10 @@ class OllamaClient(ClientStrategy):
         )
 
 class CacheSaverOpenAIClient(ClientStrategy):
-    def __init__(self, model):
+    def __init__(self, model, ns=""):
         self.client = _CacheSaverAsyncOpenAI(
             api_key=os.environ.get("OPENAI_API_KEY"),
-            namespace="openai_" + model,
+            namespace=ns,
             cachedir="./cache"
         )
         self.model = model
@@ -106,12 +110,11 @@ class OpenAIClient(ClientStrategy):
         )
     
 class CacheSaverGroqClient(ClientStrategy):
-    def __init__(self, model):
-        dotenv.load_dotenv()
+    def __init__(self, model, ns=""):
         self.client = _CacheSaverAsyncGroq(
             api_key = os.getenv("GROQ_API_KEY"),
-            namespace="groq_" + model,
-            cachedir="./cache",
+            namespace=ns,
+            cachedir="./cache"
         )
         self.model = model
     
@@ -138,3 +141,11 @@ class GroqClient(ClientStrategy):
                     model=self.model,
                     n=n
         )
+    
+
+def make_client(model, use_cachesaver):
+    if use_cachesaver:
+        ns = make_random_ns()
+        return CacheSaverOpenAIClient(model=model, ns=ns)
+    else:
+        return OpenAIClient(model=model)

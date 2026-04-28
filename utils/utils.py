@@ -35,7 +35,10 @@ def tokens_to_cost(prompt_tokens, completion_tokens, model):
         "meta-llama/llama-4-scout-17b-16e-instruct" : {"prompt_price" : 0.11, "completion_price" : 0.34},
 
         # Qwen
-        "qwen/qwen3-32b" : {"prompt_price" : 0.29, "completion_price" : 0.59}
+        "qwen/qwen3-32b" : {"prompt_price" : 0.29, "completion_price" : 0.59},
+
+        # GPT
+        "gpt-5-nano-2025-08-07" : {"prompt_price" : 0.05, "completion_price" : 0.4}
     }
 
     input_cost = catalogue[model]["prompt_price"] * prompt_tokens / 1000000
@@ -60,3 +63,6 @@ def sanitize_model_name(model_name):
         else:
             new_mn += str(c)
     return new_mn
+
+def make_random_ns():
+    return "ns_" + str(np.random.randint(10000000))
