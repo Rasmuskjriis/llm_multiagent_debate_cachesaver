@@ -68,11 +68,6 @@ def filter_people(person):
     return people
 
 async def main(file, model, use_cachesaver):
-    if use_cachesaver:
-        client = clients.CacheSaverGroqClient(model=model)
-    else:
-        client = clients.GroqClient(model=model)
-
     with open("{}".format(file), "r") as f:
         response = json.load(f)
         
@@ -91,6 +86,13 @@ async def main(file, model, use_cachesaver):
 
     accuracies = []
 
+    prompt_tokens_used = 0
+    prompt_tokens_saved = 0
+    completion_tokens_used = 0
+    completion_tokens_saved = 0
+
+    api_calls = 0
+
     for person in people:
 
         if person not in gt_data:
@@ -101,6 +103,7 @@ async def main(file, model, use_cachesaver):
         bio_descriptions = response[person]# [2][-1]['content']
 
         for description in bio_descriptions:
+            client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
 
             bio_description = description[-1]['content']
 
@@ -118,12 +121,30 @@ async def main(file, model, use_cachesaver):
                 completion_metadata = await generate_answer(client, message)
                 completion, metadata = completion_metadata
 
+                usage = getattr(completion, "usage", None)
+
+                cached = metadata.cached[0]
+                duplicated = metadata.duplicated[0]
+
+                if cached: # If cached, all tokens are saved
+                    prompt_tokens_saved += usage.prompt_tokens
+                    completion_tokens_saved += usage.completion_tokens
+                elif duplicated: # If duped only prompt tokens are saved
+                    prompt_tokens_saved += usage.prompt_tokens
+                    completion_tokens_used += usage.completion_tokens
+                else:
+                    prompt_tokens_used += usage.prompt_tokens
+                    completion_tokens_used += usage.completion_tokens
+                    api_calls += 1 
+
                 content = completion.choices[0].message.content
 
                 accurate = parse_yes_no(content)
 
                 if accurate is not None:
                     accuracies.append(float(accurate))
+
+                
 
     # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
     if len(accuracies) > 0:
@@ -134,7 +155,12 @@ async def main(file, model, use_cachesaver):
 
     return {"mean": mean, 
             "sem": sem,
-            "ci": (ci_low, ci_high)
+            "ci": (ci_low, ci_high),
+            "prompt_tokens_used": prompt_tokens_used,
+            "prompt_tokens_saved": prompt_tokens_saved,
+            "completion_tokens_used": completion_tokens_used,
+            "completion_tokens_saved": completion_tokens_saved,
+            "api_calls" : api_calls
             }
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ import re
 import asyncio
 
 import clients.client_strategies as clients
-from utils.utils import calc_mean_sem_ci, tokens_to_cost
+from utils.utils import calc_mean_sem_ci, make_random_ns, tokens_to_cost, make_random_ns
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -94,14 +94,10 @@ def most_frequent(List):
 
 
 async def main(agents, rounds, problems, model, use_cachesaver):
-    if use_cachesaver:
-        client = clients.CacheSaverGroqClient(model=model)
-    else:
-        client = clients.GroqClient(model=model)
 
     answer = parse_answer("My answer is the same as the other agents and AI language model: the result of 12+28*19+6 is 550.")
 
-    np.random.seed(0) # should be removed when we do our experiment
+    np.random.seed(0)
 
     scores = []
 
@@ -114,15 +110,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     prompt_tokens_saved = 0
     completion_tokens_saved = 0
 
-    input_cost_used = 0
-    output_cost_used = 0
-    input_cost_saved = 0
-    output_cost_saved = 0
-
-    mean = 0
-    sem = 0
-    ci = 0
-
     for round in tqdm(range(problems)):
         a, b, c, d, e, f = np.random.randint(50, 200, size=6)
 
@@ -133,6 +120,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         question_prompt = "We seek to find the result of {}+{}*{}+{}-{}*{}?".format(a, b, c, d, e, f)
 
         for round in range(rounds):
+            client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
+
             tasks = []
             for i, agent_context in enumerate(agent_contexts):
 
@@ -142,10 +131,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                     agent_context.append(message)
 
                 tasks.append(generate_answer(client, agent_context))
-                api_calls += 1
             
             completions_metadata = await asyncio.gather(*tasks)
-            print("completion_metadata: ", completions_metadata)
             completions, metadata = zip(*completions_metadata)
 
             for i, agent_context in enumerate(agent_contexts):
@@ -155,8 +142,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                 usage = getattr(completions[i], "usage", None)
 
                 usage_metadata = metadata[i]
-
-                print("Usage metadata: ", usage_metadata) # for debugging
 
                 cached = usage_metadata.cached[0]
                 duplicated = usage_metadata.duplicated[0]
@@ -170,13 +155,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                 else:
                     prompt_tokens_used += usage.prompt_tokens
                     completion_tokens_used += usage.completion_tokens
-
-                print(f"  Round {round+1}, Agent {i+1}, problem {round+1}:")
-                print(f"  Cached: {cached}, Duplicated: {duplicated}")
-                print(f"  Prompt tokens: {usage.prompt_tokens}")
-                print(f"  Completion tokens: {usage.completion_tokens}")
-                print(f"  Total tokens: {usage.total_tokens}")
-
+                    api_calls += 1      
 
         text_answers = []
 
@@ -201,6 +180,10 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         except:
             continue
 
+    mean = 0
+    sem = 0
+    ci = 0
+
     # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
     if len(text_answers) > 0 and len(scores) > 0:
         mean, sem, ci = calc_mean_sem_ci(scores)
@@ -208,22 +191,13 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     ci_low = mean-ci
     ci_high = mean+ci
 
-    input_cost_used, output_cost_used, total_cost_used = tokens_to_cost(prompt_tokens_used, completion_tokens_used, model)
-    input_cost_saved, output_cost_saved, total_cost_saved = tokens_to_cost(prompt_tokens_saved, completion_tokens_saved, model)
-
     return {"mean": mean, 
             "sem": sem,
             "ci": (ci_low, ci_high),
             "prompt_tokens_used" : prompt_tokens_used, 
-            "completion_tokens_used" : completion_tokens_used,
             "prompt_tokens_saved" : prompt_tokens_saved,
+            "completion_tokens_used" : completion_tokens_used,
             "completion_tokens_saved" : completion_tokens_saved,
-            "input_cost_used" : input_cost_used,
-            "output_cost_used" : output_cost_used,
-            "total_cost_used" : total_cost_used,
-            "input_cost_saved" : input_cost_saved,
-            "output_cost_saved" : output_cost_saved,
-            "total_cost_saved" : total_cost_saved,
             "api_calls" : api_calls
             }
 

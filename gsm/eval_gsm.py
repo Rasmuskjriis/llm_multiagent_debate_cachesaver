@@ -80,7 +80,7 @@ def compute_accuracy(gt, pred_solutions):
         pred_answers = []
 
         for pred_solution in pred_solutions:
-            print("pred_solution: ", pred_solution)
+            #print("pred_solution: ", pred_solution)
             pred_answer = parse_answer(pred_solution)
 
             if pred_answer is None:
@@ -145,7 +145,8 @@ async def main(file):
         if accurate is not None:
             accuracies.append(float(accurate))
         else:
-            print(gt)
+            #print(gt) # we dont want to print in experiment
+            pass
 
     # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
     if len(accuracies) > 0:
