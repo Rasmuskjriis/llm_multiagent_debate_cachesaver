@@ -184,6 +184,9 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     sem = 0
     ci = 0
 
+    print("Uses CacheSaver: ", use_cachesaver)
+    print("agent context: ", agent_contexts)
+
     # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
     if len(text_answers) > 0 and len(scores) > 0:
         mean, sem, ci = calc_mean_sem_ci(scores)

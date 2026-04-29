@@ -103,11 +103,14 @@ async def main(file, model, use_cachesaver):
         bio_descriptions = response[person]# [2][-1]['content']
 
         for description in bio_descriptions:
+            # print("Description: ", description)
+
             client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
 
             bio_description = description[-1]['content']
 
             bio_bullets = parse_bullets(bio_description)
+
             if len(bio_bullets) == 1:
                 if len(bio_bullets[0]) < 400:
                     continue
@@ -116,6 +119,10 @@ async def main(file, model, use_cachesaver):
             # continue
 
             for bullet in gt_bullets:
+                print("person: ", person)
+                print("bio_bullets: ", bio_bullets)
+                print("bullet: ", bullet)
+
                 message = [{"role": "user", "content": "Consider the following biography of {}: \n {} \n\n Is the above biography above consistent with the fact below? \n\n {} \n Give a single word answer, yes, no, or uncertain. Carefully check the precise dates and locations between the fact and the above biography.".format(person, bio_bullets, bullet)}]
 
                 completion_metadata = await generate_answer(client, message)
@@ -144,7 +151,7 @@ async def main(file, model, use_cachesaver):
                 if accurate is not None:
                     accuracies.append(float(accurate))
 
-                
+    print("API calls - eval: ", api_calls)
 
     # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
     if len(accuracies) > 0:

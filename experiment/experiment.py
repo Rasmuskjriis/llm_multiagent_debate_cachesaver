@@ -85,6 +85,9 @@ async def run_biography_experiment(model, size_of_experiment, results_df):
     nc_file_name, nc_metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=False)    
     nc_eval = await eval_conversation_main(file=nc_file_name, model=model, use_cachesaver=False)
 
+    print("API calls - gen: ", nc_metrics["api_calls"])
+    print("API calls - eval: ", nc_eval["api_calls"])
+
     nc_metrics["prompt_tokens_used"] += nc_eval["prompt_tokens_used"]
     nc_metrics["prompt_tokens_saved"] += nc_eval["prompt_tokens_saved"]
     nc_metrics["completion_tokens_used"] += nc_eval["completion_tokens_used"]
@@ -159,10 +162,10 @@ async def main(model, size_of_experiment):
                         "cost ($)", 
                         "cost_saved ($)"]
     
-    results_df = await run_gen_math_experiment(model, size_of_experiment, results_df)
-    results_df = await run_gsm_experiment(model, size_of_experiment, results_df)
+    # results_df = await run_gen_math_experiment(model, size_of_experiment, results_df)
+    # results_df = await run_gsm_experiment(model, size_of_experiment, results_df)
     results_df = await run_biography_experiment(model, size_of_experiment, results_df)
-    results_df = await run_mmlu_experiment(model, size_of_experiment, results_df)
+    # results_df = await run_mmlu_experiment(model, size_of_experiment, results_df)
 
     print(results_df)
     results_df.to_excel(f"experiment/{sanitize_model_name(model)}_Experiment.xlsx", index=True)
