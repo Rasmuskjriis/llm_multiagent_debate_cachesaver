@@ -33,6 +33,7 @@ def tokens_to_cost(prompt_tokens, completion_tokens, model):
         # Groq
         # LLama-4
         "meta-llama/llama-4-scout-17b-16e-instruct" : {"prompt_price" : 0.11, "completion_price" : 0.34},
+        "llama-3.1-8b-instant" : {"prompt_price" : 0.05, "completion_price" : 0.08},
 
         # Qwen
         "qwen/qwen3-32b" : {"prompt_price" : 0.29, "completion_price" : 0.59},
