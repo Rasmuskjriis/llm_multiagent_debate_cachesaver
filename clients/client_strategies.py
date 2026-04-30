@@ -146,6 +146,6 @@ class GroqClient(ClientStrategy):
 def make_client(model, use_cachesaver):
     if use_cachesaver:
         ns = make_random_ns()
-        return CacheSaverGroqClient(model=model, ns=ns)
+        return CacheSaverOpenAIClient(model=model, ns=ns)
     else:
-        return GroqClient(model=model)
+        return OpenAIClient(model=model)
