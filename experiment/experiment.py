@@ -40,7 +40,7 @@ def make_result_row(agents, rounds, eval_rounds, model, result):
 async def run_gen_math_experiment(model, size_of_experiment, results_df):
     agents = 2
     rounds = 3
-    eval_rounds = int(100 * size_of_experiment)
+    eval_rounds = size_of_experiment
 
     nc_res = await gen_math_main(agents=agents, rounds=rounds, problems=eval_rounds, model=model, use_cachesaver=False)
     nc_row = make_result_row(agents, rounds, eval_rounds, model, nc_res)
@@ -58,7 +58,7 @@ async def run_gen_math_experiment(model, size_of_experiment, results_df):
 async def run_gsm_experiment(model, size_of_experiment, results_df):
     agents = 3
     rounds = 2
-    problems = int(100 * size_of_experiment)
+    problems = size_of_experiment
 
     nc_file_name, nc_metrics = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=False)    
     nc_eval = await eval_gsm_main(file=nc_file_name)
@@ -80,7 +80,7 @@ async def run_gsm_experiment(model, size_of_experiment, results_df):
 async def run_biography_experiment(model, size_of_experiment, results_df):
     agents = 3
     rounds = 2
-    problems = int(100 * size_of_experiment)
+    problems = size_of_experiment
 
     nc_file_name, nc_metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=False)    
     nc_eval = await eval_conversation_main(file=nc_file_name, model=model, use_cachesaver=False)
@@ -119,7 +119,7 @@ async def run_biography_experiment(model, size_of_experiment, results_df):
 async def run_mmlu_experiment(model, size_of_experiment, results_df):
     agents = 3
     rounds = 2
-    problems = int(100 * size_of_experiment)
+    problems = size_of_experiment
 
     nc_file_name, nc_metrics = await gen_mmlu_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=False)    
     nc_eval = await eval_mmlu_main(file=nc_file_name)  
@@ -168,15 +168,15 @@ async def main(model, size_of_experiment):
     # results_df = await run_mmlu_experiment(model, size_of_experiment, results_df)
 
     print(results_df)
-    results_df.to_excel(f"experiment/{sanitize_model_name(model)}_Experiment.xlsx", index=True)
+    results_df.to_excel(f"experiment/{sanitize_model_name(model)}_experiment_{size_of_experiment}.xlsx", index=True)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--model", required=True)
-    parser.add_argument("-s", "--size", type=float, required=True)
+    parser.add_argument("-p", "--problems", type=int, default=100)
     args = parser.parse_args()
 
-    asyncio.run(main(args.model, args.size))
+    asyncio.run(main(args.model, args.problems))
 
 
 

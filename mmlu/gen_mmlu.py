@@ -44,7 +44,7 @@ async def generate_answer(client, answer_context):
     except Exception as e:
         print(f"An error occurred: {e}")
         print("retrying due to an error......")
-        await asyncio.sleep(5)
+        await asyncio.sleep(30)
         return await generate_answer(client, answer_context)
 
     return completion, metadata
@@ -126,8 +126,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
         response_dict[question] = (agent_contexts, answer)
 
-        print(agent_contexts)
-        print(answer)
+        # print(agent_contexts)
+        # print(answer)
 
     file_name = "mmlu/results/mmlu_{}_{}.json".format(agents, rounds)
     with open(file_name, "w") as f:

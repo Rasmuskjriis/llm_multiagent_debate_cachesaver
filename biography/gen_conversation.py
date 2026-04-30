@@ -16,7 +16,7 @@ async def generate_answer(client, answer_context):
     except Exception as e:
         print(f"An error occurred: {e}")
         print("retrying due to an error......")
-        await asyncio.sleep(5)
+        await asyncio.sleep(30)
         return await generate_answer(client, answer_context)
 
     return completion, metadata
