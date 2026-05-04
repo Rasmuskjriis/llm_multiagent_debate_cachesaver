@@ -29,8 +29,8 @@ def calc_mean_sem_ci(scores):
     return mean, sem, ci
 
 def tokens_to_cost(prompt_tokens, completion_tokens, model):
-    # Groq
     catalogue = {
+        # Groq
         # LLama-4
         "meta-llama/llama-4-scout-17b-16e-instruct" : {"prompt_price" : 0.11, "completion_price" : 0.34},
         "llama-3.1-8b-instant" : {"prompt_price" : 0.05, "completion_price" : 0.08},
@@ -38,6 +38,8 @@ def tokens_to_cost(prompt_tokens, completion_tokens, model):
         # Qwen
         "qwen/qwen3-32b" : {"prompt_price" : 0.29, "completion_price" : 0.59},
 
+
+        # OpenAI
         # GPT
         "gpt-5-nano-2025-08-07" : {"prompt_price" : 0.05, "completion_price" : 0.4}
     }
