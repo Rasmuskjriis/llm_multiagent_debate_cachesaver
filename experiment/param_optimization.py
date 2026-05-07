@@ -1,3 +1,23 @@
+"""
+This runs module runs our own parametric optimization experiments, to see how
+much CacheSaver can save when running parameter optimization on this MAS.
+
+To be exact, we run the following experiments:
+- Math: All permutations of 1-3 agents and 1-3 rounds, 100 problems, with and without CacheSaver
+- Grade School Math: All permutations of 1-3 agents and 1-3 rounds, 100 problems, with and without CacheSaver
+- Biography: All permutations of 1-3 agents and 1-3 rounds, 100 problems, with and without CacheSaver
+- MMLU: All permutations of 1-3 agents and 1-3 rounds, 100 problems, with and without CacheSaver
+
+All while we track the following metrics:
+- Accuracy
+- Runtime
+- API calls
+- Tokens used and saved (prompt and completion)
+- Cost paid and saved to the inference API
+
+The result are saved in an excel file, and can be found in param_optimization_results/
+"""
+
 import pandas as pd
 import asyncio
 import argparse
@@ -14,7 +34,12 @@ from utils.utils import calc_mean_sem_ci, tokens_to_cost, clear_cache, sanitize_
 import time
 
 def make_result_row(agents, rounds, eval_rounds, model, result, runtime):
-        
+    """ 
+    Helper function that reformats the results of our experiment into
+    the format we want for our Dataframe. Also calculates the cost paid 
+    and saved based on the tokens used and saved.
+    """
+
     input_cost_used, output_cost_used, total_cost_used = tokens_to_cost(result["prompt_tokens_used"], result["completion_tokens_used"], model)
     input_cost_saved, output_cost_saved, total_cost_saved = tokens_to_cost(result["prompt_tokens_saved"], result["completion_tokens_saved"], model)
         
@@ -45,6 +70,9 @@ def make_result_row(agents, rounds, eval_rounds, model, result, runtime):
 
 
 async def param_optimization_gen_math(max_agents, max_rounds, model, problems, results_df):
+    """
+    Runs the parameter optimization experiment for the math subtask, with and without CacheSaver.
+    """
 
     all_permutations = []
 
@@ -79,6 +107,9 @@ async def param_optimization_gen_math(max_agents, max_rounds, model, problems, r
 
 
 async def param_optimization_gsm(max_agents, max_rounds, model, problems, results_df):
+    """
+    Runs the parameter optimization experiment for the grade school math subtask, with and without CacheSaver.
+    """
     
     all_permutations = []
     for i in range(1, max_rounds+1):
@@ -113,6 +144,9 @@ async def param_optimization_gsm(max_agents, max_rounds, model, problems, result
 
 
 async def param_optimization_biography(max_agents, max_rounds, model, problems, results_df):
+    """
+    Runs the parameter optimization experiment for the biography subtask, with and without CacheSaver.
+    """
 
     all_permutations = []
     for i in range(1, max_rounds+1):
@@ -154,6 +188,9 @@ async def param_optimization_biography(max_agents, max_rounds, model, problems, 
 
 
 async def parameter_optimization_mmlu(max_agents, max_rounds, model, problems, results_df):
+    """
+    Runs the parameter optimization experiment for the MMLU subtask, with and without CacheSaver.
+    """
 
     all_permutations = []
     for i in range(1, max_rounds+1):
