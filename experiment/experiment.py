@@ -1,6 +1,6 @@
 """
 This runs module recreate the experiemnts that was run in the LLMDebate paper, 
-but with our extendsions to their implmentation.
+but with our extensions to their implmentation.
 
 To be exact, we run the following experiments:
 - Math: 2 agents, 3 rounds, 100 problems, with and without CacheSaver
