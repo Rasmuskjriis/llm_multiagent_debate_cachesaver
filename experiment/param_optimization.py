@@ -43,6 +43,7 @@ def make_result_row(agents, rounds, eval_rounds, model, result, runtime):
         "cost_paid_w/o_cs ($)": total_cost_used + total_cost_saved,
         }
 
+
 async def param_optimization_gen_math(max_agents, max_rounds, model, problems, results_df):
 
     all_permutations = []
@@ -77,7 +78,116 @@ async def param_optimization_gen_math(max_agents, max_rounds, model, problems, r
     return results_df
 
 
-async def main(model, problems):
+async def param_optimization_gsm(max_agents, max_rounds, model, problems, results_df):
+    
+    all_permutations = []
+    for i in range(1, max_rounds+1):
+        for j in range(1, max_agents+1):
+            all_permutations.append([j,i])
+
+    async def run_gsm_experiment(results_df, use_cachesaver):
+        for permutation in all_permutations:
+            agents = permutation[0]
+            rounds = permutation[1]
+            
+            runtime = time.time()
+            filename, gen_result = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
+            eval_result = await eval_gsm_main(file=filename)
+            result = gen_result | eval_result
+            runtime = time.time() - runtime
+            result_row = make_result_row(agents=agents, 
+                                        rounds=rounds, 
+                                        eval_rounds=problems, 
+                                        model=model, 
+                                        result=result,
+                                        runtime=runtime
+                                        )
+            results_df[f"gsm {"w/ cs" if use_cachesaver else ""} {agents} {rounds}"] = results_df.index.map(result_row)
+        
+        return results_df
+
+    results_df = await run_gsm_experiment(results_df, use_cachesaver=False)
+    results_df = await run_gsm_experiment(results_df, use_cachesaver=True)
+
+    return results_df
+
+
+async def param_optimization_biography(max_agents, max_rounds, model, problems, results_df):
+
+    all_permutations = []
+    for i in range(1, max_rounds+1):
+        for j in range(1, max_agents+1):
+            all_permutations.append([j,i])
+    
+    async def run_biography_experiment(results_df, use_cachesaver):
+        for permutation in all_permutations:
+            agents = permutation[0]
+            rounds = permutation[1]
+            
+            runtime = time.time()
+            filename, metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
+            eval = await eval_conversation_main(file=filename, model=model, use_cachesaver=use_cachesaver)
+            runtime = time.time() - runtime
+
+            metrics["prompt_tokens_used"] += eval["prompt_tokens_used"]
+            metrics["prompt_tokens_saved"] += eval["prompt_tokens_saved"]
+            metrics["completion_tokens_used"] += eval["completion_tokens_used"]
+            metrics["completion_tokens_saved"] += eval["completion_tokens_saved"]
+            metrics["api_calls"] += eval["api_calls"]
+
+            result = eval | metrics
+            result_row = make_result_row(agents=agents, 
+                                        rounds=rounds, 
+                                        eval_rounds=problems, 
+                                        model=model, 
+                                        result=result,
+                                        runtime=runtime
+                                        )
+            results_df[f"biography {"w/ cs" if use_cachesaver else ""} {agents} {rounds}"] = results_df.index.map(result_row)
+        
+        return results_df
+    
+    results_df = await run_biography_experiment(results_df, use_cachesaver=False)
+    results_df = await run_biography_experiment(results_df, use_cachesaver=True)
+
+    return results_df
+
+
+async def parameter_optimization_mmlu(max_agents, max_rounds, model, problems, results_df):
+
+    all_permutations = []
+    for i in range(1, max_rounds+1):
+        for j in range(1, max_agents+1):
+            all_permutations.append([j,i])
+    
+    async def run_mmlu_experiment(results_df, use_cachesaver):
+        for permutation in all_permutations:
+            agents = permutation[0]
+            rounds = permutation[1]
+            
+            runtime = time.time()
+            filename, gen_result = await gen_mmlu_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
+            eval_result = await eval_mmlu_main(file=filename)
+            result = gen_result | eval_result
+            runtime = time.time() - runtime
+            result_row = make_result_row(agents=agents, 
+                                        rounds=rounds, 
+                                        eval_rounds=problems, 
+                                        model=model, 
+                                        result=result,
+                                        runtime=runtime
+                                        )
+            results_df[f"mmlu {"w/ cs" if use_cachesaver else ""} {agents} {rounds}"] = results_df.index.map(result_row)
+        
+        return results_df
+
+    results_df = await run_mmlu_experiment(results_df, use_cachesaver=False)
+    results_df = await run_mmlu_experiment(results_df, use_cachesaver=True)
+
+    return results_df
+
+
+async def main(max_agents, max_rounds, model, problems):
     #clear_cache()
 
     results_df = pd.DataFrame()
@@ -104,8 +214,27 @@ async def main(model, problems):
                         "cost_paid_w/o_cs ($)"
                         ]
 
-    results_df = await param_optimization_gen_math(max_agents=1, max_rounds=1, model=model, problems=1, results_df=results_df)
-
+    results_df = await param_optimization_gen_math(
+            max_agents=max_agents, 
+            max_rounds=max_rounds, 
+            model=model, 
+            problems=problems, 
+            results_df=results_df
+            )
+    results_df = await param_optimization_gsm(
+            max_agents=max_agents, 
+            max_rounds=max_rounds, 
+            model=model, 
+            problems=problems, 
+            results_df=results_df
+            )
+    results_df = await param_optimization_biography(
+            max_agents=max_agents, 
+            max_rounds=max_rounds, 
+            model=model, 
+            problems=problems, 
+            results_df=results_df
+            )
     print(results_df)
     results_df.to_excel(f"experiment/param_optimization_results/{sanitize_model_name(model)}_param_optimization_{problems}.xlsx", index=True)
     
@@ -115,11 +244,14 @@ if __name__ == "__main__":
     paser = argparse.ArgumentParser()
 
     paser.add_argument("-m", "--model", required=True)
-    paser.add_argument("-p", "--problem", required=True)
+    paser.add_argument("-p", "--problem", type=int, required=True)
+
+    paser.add_argument("-a", "--max_agents", type=int, required=True)
+    paser.add_argument("-r", "--max_rounds", type=int, required=True)
 
     args = paser.parse_args()
 
-    asyncio.run(main(model=args.model, problems=args.problem))
+    asyncio.run(main(max_agents=args.max_agents, max_rounds=args.max_rounds, model=args.model, problems=args.problem))
 
     
 
