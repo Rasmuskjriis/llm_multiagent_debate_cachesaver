@@ -225,6 +225,10 @@ async def parameter_optimization_mmlu(max_agents, max_rounds, model, problems, r
 
 
 async def main(max_agents, max_rounds, model, problems):
+    """
+    Clears our cache, and then runs all the experiments from this module,
+    then saves the result to an excel file.
+    """
     #clear_cache()
     experiemnt_file_path = f"experiment/param_optimization_results/{sanitize_model_name(model)}_param_optimization_{problems}.xlsx"
 
