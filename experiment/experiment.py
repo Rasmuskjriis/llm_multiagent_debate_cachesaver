@@ -41,7 +41,7 @@ def make_result_row(agents, rounds, eval_rounds, model, result, runtime):
         #"output_cost_saved ($)" : output_cost_saved,
         "cost_paid ($)": total_cost_used,
         "cost_saved ($)" : total_cost_saved,
-        "total_cost ($)": total_cost_used - total_cost_saved,
+        "cost_paid_w/o_cs ($)": total_cost_used + total_cost_saved,
         }
 
 async def run_gen_math_experiment(model, size_of_experiment, results_df):
@@ -182,7 +182,7 @@ async def main(model, size_of_experiment):
                         #"output_cost_saved ($)", 
                         "cost_paid ($)", 
                         "cost_saved ($)",
-                        "total_cost ($)"
+                        "cost_paid_w/o_cs ($)"
                         ]
     
     results_df = await run_gen_math_experiment(model, size_of_experiment, results_df)
