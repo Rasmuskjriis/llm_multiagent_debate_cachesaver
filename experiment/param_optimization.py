@@ -189,6 +189,7 @@ async def parameter_optimization_mmlu(max_agents, max_rounds, model, problems, r
 
 async def main(max_agents, max_rounds, model, problems):
     #clear_cache()
+    experiemnt_file_path = f"experiment/param_optimization_results/{sanitize_model_name(model)}_param_optimization_{problems}.xlsx"
 
     results_df = pd.DataFrame()
 
@@ -221,6 +222,9 @@ async def main(max_agents, max_rounds, model, problems):
             problems=problems, 
             results_df=results_df
             )
+    # Save intermediate results after gen_math experiment in case of a crash.
+    results_df.to_excel(experiemnt_file_path, index=True) 
+
     results_df = await param_optimization_gsm(
             max_agents=max_agents, 
             max_rounds=max_rounds, 
@@ -228,7 +232,20 @@ async def main(max_agents, max_rounds, model, problems):
             problems=problems, 
             results_df=results_df
             )
+    # Save intermediate results after gen_math experiment in case of a crash.
+    results_df.to_excel(experiemnt_file_path, index=True) 
+
     results_df = await param_optimization_biography(
+            max_agents=max_agents, 
+            max_rounds=max_rounds, 
+            model=model, 
+            problems=problems, 
+            results_df=results_df
+            )
+    # Save intermediate results after gen_math experiment in case of a crash.
+    results_df.to_excel(experiemnt_file_path, index=True) 
+
+    results_df = await parameter_optimization_mmlu(
             max_agents=max_agents, 
             max_rounds=max_rounds, 
             model=model, 

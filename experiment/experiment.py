@@ -1,3 +1,23 @@
+"""
+This runs module recreate the experiemnts that was run in the LLMDebate paper, 
+but with our extendsions to their implmentation.
+
+To be exact, we run the following experiments:
+- Math: 2 agents, 3 rounds, 100 problems, with and without CacheSaver
+- Grade School Math: 3 agents, 2 rounds, 100 problems, with and without CacheSaver
+- Biography: 3 agents, 2 rounds, 100 problems, with and without CacheSaver
+- MMLU: 3 agents, 2 rounds, 100 problems, with and without CacheSaver
+
+All while we track the following metrics:
+- Accuracy
+- Runtime
+- API calls
+- Tokens used and saved (prompt and completion)
+- Cost paid and saved to the inference API
+
+The result are saved in an excel file, and can be found in repeat_exeriment_results/
+"""
+
 import pandas as pd
 import asyncio
 import argparse
@@ -15,6 +35,11 @@ import time
 
 
 def make_result_row(agents, rounds, eval_rounds, model, result, runtime):
+    """ 
+    Helper function that reformats the results of our experiment into
+    the format we want for our Dataframe. Also calculates the cost paid 
+    and saved based on the tokens used and saved.
+    """
         
     input_cost_used, output_cost_used, total_cost_used = tokens_to_cost(result["prompt_tokens_used"], result["completion_tokens_used"], model)
     input_cost_saved, output_cost_saved, total_cost_saved = tokens_to_cost(result["prompt_tokens_saved"], result["completion_tokens_saved"], model)
@@ -45,6 +70,11 @@ def make_result_row(agents, rounds, eval_rounds, model, result, runtime):
         }
 
 async def run_gen_math_experiment(model, size_of_experiment, results_df):
+    """
+    Recreate the math experiment from the LLMDebate paper with our extensions, 
+    it runs both with and without CacheSaver.
+    """
+
     agents = 2
     rounds = 3
     eval_rounds = size_of_experiment
@@ -67,6 +97,11 @@ async def run_gen_math_experiment(model, size_of_experiment, results_df):
     return results_df
 
 async def run_gsm_experiment(model, size_of_experiment, results_df):
+    """
+    Recreate the grade school math experiment from the LLMDebate paper with our extensions, 
+    it runs both with and without CacheSaver.
+    """
+
     agents = 3
     rounds = 2
     problems = size_of_experiment
@@ -93,6 +128,11 @@ async def run_gsm_experiment(model, size_of_experiment, results_df):
     return results_df
 
 async def run_biography_experiment(model, size_of_experiment, results_df):
+    """
+    Recreate the biography experiment from the LLMDebate paper with our extensions, 
+    it runs both with and without CacheSaver.
+    """
+    
     agents = 3
     rounds = 2
     problems = size_of_experiment
@@ -133,6 +173,11 @@ async def run_biography_experiment(model, size_of_experiment, results_df):
     return results_df
 
 async def run_mmlu_experiment(model, size_of_experiment, results_df):
+    """
+    Recreate the MMLU experiment from the LLMDebate paper with our extensions, 
+    it runs both with and without CacheSaver.
+    """
+
     agents = 3
     rounds = 2
     problems = size_of_experiment
@@ -159,6 +204,11 @@ async def run_mmlu_experiment(model, size_of_experiment, results_df):
     return results_df
 
 async def main(model, size_of_experiment):
+    """
+    It clears our cache, and then runs all the experiments from this module,
+    then saves the result to an excel file.
+    """
+
     clear_cache()
 
     results_df = pd.DataFrame()
