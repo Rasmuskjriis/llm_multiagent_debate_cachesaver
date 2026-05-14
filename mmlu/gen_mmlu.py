@@ -8,7 +8,7 @@ import asyncio
 import argparse
 
 import clients.client_strategies as clients
-from utils.utils import tokens_to_cost
+from utils.utils import count_token_usage
 
 def construct_message(agents_contexts, question):
     if len(agents_contexts) == 0:
@@ -68,12 +68,13 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
     response_dict = {}
 
-    api_calls = 0
-
-    prompt_tokens_used = 0
-    prompt_tokens_saved = 0
-    completion_tokens_used = 0
-    completion_tokens_saved = 0
+    usage_tracker = {
+        "prompt_tokens_used" : 0,
+        "prompt_tokens_saved" : 0,
+        "completion_tokens_used" : 0,
+        "completion_tokens_saved" : 0,
+        "api_calls" : 0
+    }
 
     tasks = glob("mmlu/data/test/*.csv")
 
@@ -110,20 +111,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
                 usage = getattr(completions[i], "usage", None)
 
-                cached = metadata[i].cached[0]
-                duplicated = metadata[i].duplicated[0]
-
-                if cached: # If cached, all tokens are saved
-                    prompt_tokens_saved += usage.prompt_tokens
-                    completion_tokens_saved += usage.completion_tokens
-                elif duplicated: # If duped only prompt tokens are saved
-                    prompt_tokens_saved += usage.prompt_tokens
-                    completion_tokens_used += usage.completion_tokens
-                else:
-                    prompt_tokens_used += usage.prompt_tokens
-                    completion_tokens_used += usage.completion_tokens
-                    api_calls += 1      
-
+                usage_tracker = count_token_usage(usage_tracker, usage, metadata[i])
+                
         response_dict[question] = (agent_contexts, answer)
 
         # print(agent_contexts)
@@ -133,11 +122,11 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     with open(file_name, "w") as f:
         json.dump(response_dict, f)
 
-    return file_name, {"prompt_tokens_used": prompt_tokens_used,
-            "prompt_tokens_saved": prompt_tokens_saved,
-            "completion_tokens_used": completion_tokens_used,
-            "completion_tokens_saved": completion_tokens_saved,
-            "api_calls" : api_calls
+    return file_name, {"prompt_tokens_used": usage_tracker["prompt_tokens_used"],
+            "prompt_tokens_saved": usage_tracker["prompt_tokens_saved"],
+            "completion_tokens_used": usage_tracker["completion_tokens_used"],
+            "completion_tokens_saved": usage_tracker["completion_tokens_saved"],
+            "api_calls" : usage_tracker["api_calls"]
             }
 
 if __name__ == "__main__":

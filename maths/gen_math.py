@@ -5,7 +5,7 @@ import re
 import asyncio
 
 import clients.client_strategies as clients
-from utils.utils import calc_mean_sem_ci, make_random_ns, tokens_to_cost, make_random_ns
+from utils.utils import calc_mean_sem_ci, make_random_ns, tokens_to_cost, make_random_ns, count_token_usage
 
 def parse_bullets(sentence):
     bullets_preprocess = sentence.split("\n")
@@ -103,12 +103,13 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
     generated_description = {}
 
-    api_calls = 0
-
-    prompt_tokens_used = 0
-    completion_tokens_used = 0
-    prompt_tokens_saved = 0
-    completion_tokens_saved = 0
+    usage_tracker = {
+        "prompt_tokens_used" : 0,
+        "prompt_tokens_saved" : 0,
+        "completion_tokens_used" : 0,
+        "completion_tokens_saved" : 0,
+        "api_calls" : 0
+    }
 
     for round in tqdm(range(problems)):
         a, b, c, d, e, f = np.random.randint(50, 200, size=6)
@@ -143,19 +144,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
                 usage_metadata = metadata[i]
 
-                cached = usage_metadata.cached[0]
-                duplicated = usage_metadata.duplicated[0]
-
-                if cached: # If cached, all tokens are saved
-                    prompt_tokens_saved += usage.prompt_tokens
-                    completion_tokens_saved += usage.completion_tokens
-                elif duplicated: # If duped only prompt tokens are saved
-                    prompt_tokens_saved += usage.prompt_tokens
-                    completion_tokens_used += usage.completion_tokens
-                else:
-                    prompt_tokens_used += usage.prompt_tokens
-                    completion_tokens_used += usage.completion_tokens
-                    api_calls += 1      
+                usage_tracker = count_token_usage(usage_tracker, usage, usage_metadata)     
 
         text_answers = []
 
@@ -194,11 +183,11 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     return {"mean": mean, 
             "sem": sem,
             "ci": (ci_low, ci_high),
-            "prompt_tokens_used" : prompt_tokens_used, 
-            "prompt_tokens_saved" : prompt_tokens_saved,
-            "completion_tokens_used" : completion_tokens_used,
-            "completion_tokens_saved" : completion_tokens_saved,
-            "api_calls" : api_calls
+            "prompt_tokens_used" : usage_tracker["prompt_tokens_used"],
+            "prompt_tokens_saved" : usage_tracker["prompt_tokens_saved"],
+            "completion_tokens_used" : usage_tracker["completion_tokens_used"],
+            "completion_tokens_saved" : usage_tracker["completion_tokens_saved"],
+            "api_calls" : usage_tracker["api_calls"]
             }
 
 
