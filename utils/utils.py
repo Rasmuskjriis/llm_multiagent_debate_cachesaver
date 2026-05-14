@@ -70,8 +70,13 @@ def sanitize_model_name(model_name):
             new_mn += str(c)
     return new_mn
 
+ns_counter = 0
+ns_offset = str(np.random.randint(10000000))
+
 def make_random_ns():
-    return "ns_" + str(np.random.randint(10000000))
+    global ns_counter
+    ns_counter += 1
+    return "ns_" + str(ns_offset) + "_" + str(ns_counter)
 
 def count_token_usage(usage_tracker, usage, metadata):
     usage_tracker = usage_tracker.copy()
