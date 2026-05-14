@@ -4,6 +4,9 @@ import os
 
 def calc_mean_sem_ci(scores):
     n = len(scores)
+
+    if n == 0:
+        return 0, 0, 0
     
     mean = np.mean(scores)
     
@@ -69,3 +72,22 @@ def sanitize_model_name(model_name):
 
 def make_random_ns():
     return "ns_" + str(np.random.randint(10000000))
+
+def count_token_usage(usage_tracker, usage, metadata):
+    usage_tracker = usage_tracker.copy()
+    
+    cached = metadata.cached[0]
+    duplicated = metadata.duplicated[0]
+
+    if cached: # If cached, all tokens are saved
+        usage_tracker["prompt_tokens_saved"] += usage.prompt_tokens
+        usage_tracker["completion_tokens_saved"] += usage.completion_tokens
+    elif duplicated: # If duped only prompt tokens are saved
+        usage_tracker["prompt_tokens_saved"] += usage.prompt_tokens
+        usage_tracker["completion_tokens_used"] += usage.completion_tokens
+    else:
+        usage_tracker["prompt_tokens_used"] += usage.prompt_tokens
+        usage_tracker["completion_tokens_used"] += usage.completion_tokens
+        usage_tracker["api_calls"] += 1
+
+    return usage_tracker

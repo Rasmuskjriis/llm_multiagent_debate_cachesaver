@@ -50,20 +50,20 @@ def make_result_row(agents, rounds, eval_rounds, model, result, runtime):
         "agents": agents,
         "rounds": rounds,
         "problems": eval_rounds,
-        #"model": model,
+        "model": model,
         "API calls" : result["api_calls"],
         "accuracy": round(result["mean"], 2),
         "runtime (s)": runtime,
-        #"standard error": result["sem"],
-        #"confidence interval": (round(float(result["ci"][0]), 3), round(float(result["ci"][1]), 3)),
+        "standard error": result["sem"],
+        "confidence interval": (round(float(result["ci"][0]), 3), round(float(result["ci"][1]), 3)),
         "input_tokens_used": result["prompt_tokens_used"],
         "input_tokens_saved": result["prompt_tokens_saved"],
-        #"input_cost ($)": input_cost_used,
-        #"input_cost_saved ($)" : input_cost_saved,
+        "input_cost ($)": input_cost_used,
+        "input_cost_saved ($)" : input_cost_saved,
         "output_tokens_used": result["completion_tokens_used"],
         "output_tokens_saved": result["completion_tokens_saved"],
-        #"output_cost ($)": output_cost_used,
-        #"output_cost_saved ($)" : output_cost_saved,
+        "output_cost ($)": output_cost_used,
+        "output_cost_saved ($)" : output_cost_saved,
         "cost_paid ($)": total_cost_used,
         "cost_saved ($)" : total_cost_saved,
         "cost_paid_w/o_cs ($)": total_cost_used + total_cost_saved,
@@ -242,7 +242,7 @@ async def main(model, size_of_experiment):
 
     # results_df = results_df.T
     print(results_df)
-    results_df.to_excel(f"experiment/{sanitize_model_name(model)}_experiment_{size_of_experiment}.xlsx", index=True)
+    results_df.to_excel(f"experiment/replicated_experiment_results/{sanitize_model_name(model)}_experiment_{size_of_experiment}.xlsx", index=True)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

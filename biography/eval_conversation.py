@@ -6,7 +6,7 @@ import asyncio
 import argparse
 
 import clients.client_strategies as clients
-from utils.utils import calc_mean_sem_ci, tokens_to_cost
+from utils.utils import calc_mean_sem_ci, count_token_usage, tokens_to_cost
 
 async def generate_answer(client, answer_context):
     try:
@@ -86,12 +86,13 @@ async def main(file, model, use_cachesaver):
 
     accuracies = []
 
-    prompt_tokens_used = 0
-    prompt_tokens_saved = 0
-    completion_tokens_used = 0
-    completion_tokens_saved = 0
-
-    api_calls = 0
+    usage_tracker = {
+        "prompt_tokens_used" : 0,
+        "prompt_tokens_saved" : 0,
+        "completion_tokens_used" : 0,
+        "completion_tokens_saved" : 0,
+        "api_calls" : 0
+    }
 
     for person in people:
 
@@ -130,19 +131,7 @@ async def main(file, model, use_cachesaver):
 
                 usage = getattr(completion, "usage", None)
 
-                cached = metadata.cached[0]
-                duplicated = metadata.duplicated[0]
-
-                if cached: # If cached, all tokens are saved
-                    prompt_tokens_saved += usage.prompt_tokens
-                    completion_tokens_saved += usage.completion_tokens
-                elif duplicated: # If duped only prompt tokens are saved
-                    prompt_tokens_saved += usage.prompt_tokens
-                    completion_tokens_used += usage.completion_tokens
-                else:
-                    prompt_tokens_used += usage.prompt_tokens
-                    completion_tokens_used += usage.completion_tokens
-                    api_calls += 1 
+                usage_tracker = count_token_usage(usage_tracker, usage, metadata)
 
                 content = completion.choices[0].message.content
 
@@ -151,11 +140,12 @@ async def main(file, model, use_cachesaver):
                 if accurate is not None:
                     accuracies.append(float(accurate))
 
-    print("API calls - eval: ", api_calls)
+    print("API calls - eval: ", usage_tracker["api_calls"])
 
     # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers
-    if len(accuracies) > 0:
-        mean, sem, ci = calc_mean_sem_ci(accuracies)
+    
+    mean, sem, ci = calc_mean_sem_ci(accuracies)
+
 
     ci_low = mean-ci
     ci_high = mean+ci
@@ -163,11 +153,11 @@ async def main(file, model, use_cachesaver):
     return {"mean": mean, 
             "sem": sem,
             "ci": (ci_low, ci_high),
-            "prompt_tokens_used": prompt_tokens_used,
-            "prompt_tokens_saved": prompt_tokens_saved,
-            "completion_tokens_used": completion_tokens_used,
-            "completion_tokens_saved": completion_tokens_saved,
-            "api_calls" : api_calls
+            "prompt_tokens_used": usage_tracker["prompt_tokens_used"],
+            "prompt_tokens_saved": usage_tracker["prompt_tokens_saved"],
+            "completion_tokens_used": usage_tracker["completion_tokens_used"],
+            "completion_tokens_saved": usage_tracker["completion_tokens_saved"],
+            "api_calls" : usage_tracker["api_calls"]
             }
 
 if __name__ == "__main__":

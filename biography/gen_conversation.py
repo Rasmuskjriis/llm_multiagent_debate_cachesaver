@@ -6,7 +6,7 @@ import asyncio
 import argparse
 
 import clients.client_strategies as clients
-from utils.utils import tokens_to_cost
+from utils.utils import count_token_usage, tokens_to_cost
 
 async def generate_answer(client, answer_context):
     try:
@@ -81,12 +81,13 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
     generated_description = {}
 
-    api_calls = 0
-
-    prompt_tokens_used = 0
-    prompt_tokens_saved = 0
-    completion_tokens_used = 0
-    completion_tokens_saved = 0
+    usage_tracker = {
+        "prompt_tokens_used" : 0,
+        "prompt_tokens_saved" : 0,
+        "completion_tokens_used" : 0,
+        "completion_tokens_saved" : 0,
+        "api_calls" : 0
+    }
 
     for person in tqdm(people[:problems]):
         agent_contexts = [[{"role": "user", "content": "Give a bullet point biography of {} highlighting their contributions and achievements as a computer scientist, with each fact separated with a new line character. ".format(person)}] for agent in range(agents)]
@@ -117,19 +118,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
                 usage = getattr(completions[i], "usage", None)
 
-                cached = metadata[i].cached[0]
-                duplicated = metadata[i].duplicated[0]
-
-                if cached: # If cached, all tokens are saved
-                    prompt_tokens_saved += usage.prompt_tokens
-                    completion_tokens_saved += usage.completion_tokens
-                elif duplicated: # If duped only prompt tokens are saved
-                    prompt_tokens_saved += usage.prompt_tokens
-                    completion_tokens_used += usage.completion_tokens
-                else:
-                    prompt_tokens_used += usage.prompt_tokens
-                    completion_tokens_used += usage.completion_tokens
-                    api_calls += 1      
+                usage_tracker = count_token_usage(usage_tracker, usage, metadata[i])
 
             bullets = parse_bullets(completions[-1].choices[0].message.content)
 
@@ -140,17 +129,17 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         generated_description[person] = agent_contexts
 
         print("Description", generated_description)
-        print("API calls - gen: ", api_calls)
+        print("API calls - gen: ", usage_tracker["api_calls"])
     
     file_name = "biography/results/biography_{}_{}.json".format(agents, rounds)
     with open(file_name, "w") as f: 
         json.dump(generated_description, f)
 
-    return file_name, {"prompt_tokens_used": prompt_tokens_used,
-            "prompt_tokens_saved": prompt_tokens_saved,
-            "completion_tokens_used": completion_tokens_used,
-            "completion_tokens_saved": completion_tokens_saved,
-            "api_calls" : api_calls
+    return file_name, {"prompt_tokens_used": usage_tracker["prompt_tokens_used"],
+            "prompt_tokens_saved": usage_tracker["prompt_tokens_saved"],
+            "completion_tokens_used": usage_tracker["completion_tokens_used"],
+            "completion_tokens_saved": usage_tracker["completion_tokens_saved"],
+            "api_calls" : usage_tracker["api_calls"]
             }
 
 if __name__ == "__main__":
