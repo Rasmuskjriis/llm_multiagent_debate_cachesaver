@@ -3,10 +3,10 @@ This runs module runs optimization experiments as in LLMDebate paper we fork thi
 much CacheSaver can save when running parameter optimization on this MAS.
 
 To be exact, we run the following experiments:
-- Math: We test for 3 agents and 1-4 rounds, 100 problems, with and without CacheSaver
-- Grade School Math: We test for 3 agents and 1-4 rounds, 100 problems, with and without CacheSaver
-- Biography: We test for 3 agents and 1-4 rounds, 100 problems, with and without CacheSaver
-- MMLU: We test for 3 agents and 1-4 rounds, 100 problems, with and without CacheSaver
+- Math: We test for 1-7 agents and 2 rounds, 100 problems, with and without CacheSaver
+- Grade School Math: We test for 1-7 agents and 2 rounds, 100 problems, with and without CacheSaver
+- Biography: We test for 1-7 agents and 2 rounds, 100 problems, with and without CacheSaver
+- MMLU: We test for 1-7 agents and 2 rounds, 100 problems, with and without CacheSaver
 
 All while we track the following metrics:
 - Accuracy
@@ -68,14 +68,14 @@ def make_result_row(agents, rounds, eval_rounds, model, result, runtime):
         "cost_paid_w/o_cs ($)": total_cost_used + total_cost_saved,
         }
 
-async def param_turning_math(max_rounds, model, problems, df, use_cachesaver):
+async def param_turning_math(max_agents, model, problems, df, use_cachesaver):
     """
-    Runs a parameter optimization experiment for number of debate rounds for the math subtask, with and without CacheSaver.
+    Runs a parameter optimization experiment for number of agents for the math subtask, with and without CacheSaver.
     """
-    agents = 3
-    max_rounds = max_rounds
+    max_agents = max_agents
+    rounds = 2
 
-    for rounds in range(1, max_rounds+1):
+    for agents in range(1, max_agents+1):
         runtime = time.time()
         result = await gen_math_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
         runtime = time.time() - runtime
@@ -84,14 +84,14 @@ async def param_turning_math(max_rounds, model, problems, df, use_cachesaver):
     df[f"math {"w/ cs" if use_cachesaver else ""} {agents} {rounds}"] = df.index.map(result_row)
     return df
 
-async def param_optimization_gsm(max_rounds, model, problems, df, use_cachesaver):
+async def param_optimization_gsm(max_agents, model, problems, df, use_cachesaver):
     """
-    Runs a parameter optimization experiment for number of debate rounds for the grade school math subtask, with and without CacheSaver.
+    Runs a parameter optimization experiment for number of agents for the grade school math subtask, with and without CacheSaver.
     """
-    agents = 3
-    max_rounds = max_rounds
+    max_agents = max_agents
+    rounds = 2
 
-    for rounds in range(1, max_rounds+1):
+    for agents in range(1, max_agents+1):
         runtime = time.time()
         filename, gen_result = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
         eval_result = await eval_gsm_main(file=filename)
@@ -102,14 +102,14 @@ async def param_optimization_gsm(max_rounds, model, problems, df, use_cachesaver
     df[f"gsm {"w/ cs" if use_cachesaver else ""} {agents} {rounds}"] = df.index.map(result_row)
     return df
 
-async def param_optimization_biography(max_rounds, model, problems, df, use_cachesaver):
+async def param_optimization_biography(max_agents, model, problems, df, use_cachesaver):
     """
-    Runs a parameter optimization experiment for number of debate rounds for the biography subtask, with and without CacheSaver.
+    Runs a parameter optimization experiment for number of agents for the biography subtask, with and without CacheSaver.
     """
-    agents = 3
-    max_rounds = max_rounds
+    max_agents = max_agents
+    rounds = 2
 
-    for rounds in range(1, max_rounds+1):
+    for agents in range(1, max_agents+1):
         runtime = time.time()
         filename, metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
         eval = await eval_conversation_main(file=filename, model=model, use_cachesaver=use_cachesaver)
@@ -127,14 +127,14 @@ async def param_optimization_biography(max_rounds, model, problems, df, use_cach
     df[f"biography {"w/ cs" if use_cachesaver else ""} {agents} {rounds}"] = df.index.map(result_row)
     return df
 
-async def parameter_optimization_mmlu(max_rounds, model, problems, df, use_cachesaver):
+async def parameter_optimization_mmlu(max_agents, model, problems, df, use_cachesaver):
     """
-    Runs a parameter optimization experiment for number of debate rounds for the MMLU subtask, with and without CacheSaver.
+    Runs a parameter optimization experiment for number of agents for the MMLU subtask, with and without CacheSaver.
     """
-    agents = 3
-    max_rounds = max_rounds
+    max_agents = max_agents
+    rounds = 2
 
-    for rounds in range(1, max_rounds+1):
+    for agents in range(1, max_agents+1):
         runtime = time.time()
         filename, gen_result = await gen_mmlu_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
         eval_result = await eval_mmlu_main(file=filename)
@@ -145,7 +145,7 @@ async def parameter_optimization_mmlu(max_rounds, model, problems, df, use_cache
     df[f"mmlu {"w/ cs" if use_cachesaver else ""} {agents} {rounds}"] = df.index.map(result_row)
     return df
 
-async def main(max_rounds, model, problems):
+async def main(max_agents, model, problems):
     """
     Clears our cache, and then runs all the experiments from this module,
     then saves the result to an excel file.
@@ -178,14 +178,14 @@ async def main(max_rounds, model, problems):
                         ]
 
     results_df = await param_turning_math(
-            max_rounds=max_rounds, 
+            max_agents=max_agents, 
             model=model, 
             problems=problems, 
             df=results_df,
             use_cachesaver=False
             )
     results_df = await param_turning_math(
-            max_rounds=max_rounds, 
+            max_agents=max_agents, 
             model=model, 
             problems=problems, 
             df=results_df,
@@ -195,14 +195,14 @@ async def main(max_rounds, model, problems):
     results_df.to_excel(experiemnt_file_path, index=True) 
 
     results_df = await param_optimization_gsm( 
-            max_rounds=max_rounds, 
+            max_agents=max_agents, 
             model=model, 
             problems=problems, 
             df=results_df,
             use_cachesaver=False
             )
     results_df = await param_optimization_gsm(
-            max_rounds=max_rounds, 
+            max_agents=max_agents, 
             model=model, 
             problems=problems, 
             df=results_df,
@@ -212,14 +212,14 @@ async def main(max_rounds, model, problems):
     results_df.to_excel(experiemnt_file_path, index=True) 
 
     results_df = await param_optimization_biography( 
-            max_rounds=max_rounds, 
+            max_agents=max_agents, 
             model=model, 
             problems=problems, 
             df=results_df,
             use_cachesaver=False
             )
     results_df = await param_optimization_biography(
-            max_rounds=max_rounds, 
+            max_agents=max_agents, 
             model=model, 
             problems=problems, 
             df=results_df,
@@ -229,14 +229,14 @@ async def main(max_rounds, model, problems):
     results_df.to_excel(experiemnt_file_path, index=True) 
 
     results_df = await parameter_optimization_mmlu(
-            max_rounds=max_rounds, 
+            max_agents=max_agents, 
             model=model, 
             problems=problems, 
             df=results_df,
             use_cachesaver=False
             )
     results_df = await parameter_optimization_mmlu(
-            max_rounds=max_rounds, 
+            max_agents=max_agents, 
             model=model, 
             problems=problems, 
             df=results_df,
@@ -253,8 +253,8 @@ if __name__ == "__main__":
     paser.add_argument("-m", "--model", required=True)
     paser.add_argument("-p", "--problem", type=int, required=True)
 
-    paser.add_argument("-r", "--max_rounds", type=int, required=True)
+    paser.add_argument("-a", "--max_agents", type=int, required=True)
 
     args = paser.parse_args()
 
-    asyncio.run(main(max_rounds=args.max_rounds, model=args.model, problems=args.problem))
+    asyncio.run(main(max_agents=args.max_agents, model=args.model, problems=args.problem))
