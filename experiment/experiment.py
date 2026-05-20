@@ -167,7 +167,7 @@ async def run_biography_experiment(model, size_of_experiment, results_df):
     c_row = make_result_row(agents, rounds, problems, model, c_res, runtime)
     print("Biography cost paid with CacheSaver:", c_row["cost_paid ($)"])
 
-    results_df["biography"] = results_df.index.map(nc_row)
+    #results_df["biography"] = results_df.index.map(nc_row)
     results_df["biography w/ CS"] = results_df.index.map(c_row)
 
     return results_df
@@ -209,40 +209,46 @@ async def main(model, size_of_experiment):
     then saves the result to an excel file.
     """
 
-    clear_cache()
-
     results_df = pd.DataFrame()
 
     results_df.index = ["agents", 
                         "rounds", 
                         "problems", 
-                        #"model", 
+                        "model", 
                         "API calls", 
                         "accuracy",
                         "runtime (s)", 
-                        #"standard error", 
-                        #"confidence interval",
+                        "standard error", 
+                        "confidence interval",
                         "input_tokens_used", 
                         "input_tokens_saved", 
-                        #"input_cost ($)", 
-                        #"input_cost_saved ($)", 
+                        "input_cost ($)", 
+                        "input_cost_saved ($)", 
                         "output_tokens_used", 
                         "output_tokens_saved", 
-                        #"output_cost ($)", 
-                        #"output_cost_saved ($)", 
+                        "output_cost ($)", 
+                        "output_cost_saved ($)", 
                         "cost_paid ($)", 
                         "cost_saved ($)",
                         "cost_paid_w/o_cs ($)"
                         ]
     
+    result_path = f"experiment/replicated_experiment_results/{sanitize_model_name(model)}_experiment_{size_of_experiment}.xlsx"
+
     results_df = await run_gen_math_experiment(model, size_of_experiment, results_df)
+    results_df.to_excel(result_path, index=True) # save intermediate results after each experiment
+
     results_df = await run_gsm_experiment(model, size_of_experiment, results_df)
+    results_df.to_excel(result_path, index=True)
+
     results_df = await run_biography_experiment(model, size_of_experiment, results_df)
+    results_df.to_excel(result_path, index=True) # save intermediate results after each experiment
+
     results_df = await run_mmlu_experiment(model, size_of_experiment, results_df)
+    results_df.to_excel(result_path, index=True)
 
     # results_df = results_df.T
     print(results_df)
-    results_df.to_excel(f"experiment/replicated_experiment_results/{sanitize_model_name(model)}_experiment_{size_of_experiment}.xlsx", index=True)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
