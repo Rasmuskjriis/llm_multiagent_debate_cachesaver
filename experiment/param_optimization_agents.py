@@ -81,7 +81,7 @@ async def param_turning_math(max_agents, model, problems, df, use_cachesaver):
         runtime = time.time() - runtime
         result_row = make_result_row(agents=agents, rounds=rounds, eval_rounds=problems, model=model, result=result, runtime=runtime)
 
-    df[f"math {"w/ cs" if use_cachesaver else ""} {agents} {rounds}"] = df.index.map(result_row)
+        df[f"math {"w/ cs" if use_cachesaver else ""} a:{agents} r:{rounds}"] = df.index.map(result_row)
     return df
 
 async def param_optimization_gsm(max_agents, model, problems, df, use_cachesaver):
@@ -99,7 +99,7 @@ async def param_optimization_gsm(max_agents, model, problems, df, use_cachesaver
         result = gen_result | eval_result
         result_row = make_result_row(agents=agents, rounds=rounds, eval_rounds=problems, model=model, result=result, runtime=runtime)
 
-    df[f"gsm {"w/ cs" if use_cachesaver else ""} {agents} {rounds}"] = df.index.map(result_row)
+        df[f"gsm {"w/ cs" if use_cachesaver else ""} a:{agents} r:{rounds}"] = df.index.map(result_row)
     return df
 
 async def param_optimization_biography(max_agents, model, problems, df, use_cachesaver):
@@ -124,7 +124,7 @@ async def param_optimization_biography(max_agents, model, problems, df, use_cach
         result = eval | metrics
         result_row = make_result_row(agents=agents, rounds=rounds, eval_rounds=problems, model=model, result=result, runtime=runtime)
 
-    df[f"biography {"w/ cs" if use_cachesaver else ""} {agents} {rounds}"] = df.index.map(result_row)
+        df[f"biography {"w/ cs" if use_cachesaver else ""} a:{agents} r:{rounds}"] = df.index.map(result_row)
     return df
 
 async def parameter_optimization_mmlu(max_agents, model, problems, df, use_cachesaver):
@@ -142,7 +142,7 @@ async def parameter_optimization_mmlu(max_agents, model, problems, df, use_cache
         runtime = time.time() - runtime
         result_row = make_result_row(agents=agents, rounds=rounds, eval_rounds=problems, model=model, result=result, runtime=runtime)
 
-    df[f"mmlu {"w/ cs" if use_cachesaver else ""} {agents} {rounds}"] = df.index.map(result_row)
+        df[f"mmlu {"w/ cs" if use_cachesaver else ""} a:{agents} r:{rounds}"] = df.index.map(result_row)
     return df
 
 async def main(max_agents, model, problems):

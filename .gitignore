@@ -3,3 +3,7 @@ cache/
 **/__pycache__/
 llm_multiagent_debate.egg-info
 .env
+
+gsm/results/
+biography/results/
+mmlu/results/
