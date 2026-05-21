@@ -151,7 +151,7 @@ async def main(max_rounds, model, problems):
     then saves the result to an excel file.
     """
     #clear_cache()
-    experiemnt_file_path = f"experiment/param_optimization_results/{sanitize_model_name(model)}_param_optimization_{problems}.xlsx"
+    experiemnt_file_path = f"experiment/param_optimization_results/round_param_optimization_{sanitize_model_name(model)}_{problems}.xlsx"
 
     results_df = pd.DataFrame()
 
@@ -209,7 +209,7 @@ async def main(max_rounds, model, problems):
             use_cachesaver=True
             )
     print(results_df)
-    results_df.to_excel(f"experiment/param_optimization_results/{sanitize_model_name(model)}_param_optimization_{problems}.xlsx", index=True)
+    results_df.to_excel(experiemnt_file_path, index=True)
     
 
 if __name__ == "__main__":

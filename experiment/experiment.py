@@ -167,7 +167,7 @@ async def run_biography_experiment(model, size_of_experiment, results_df):
     c_row = make_result_row(agents, rounds, problems, model, c_res, runtime)
     print("Biography cost paid with CacheSaver:", c_row["cost_paid ($)"])
 
-    #results_df["biography"] = results_df.index.map(nc_row)
+    results_df["biography"] = results_df.index.map(nc_row)
     results_df["biography w/ CS"] = results_df.index.map(c_row)
 
     return results_df
