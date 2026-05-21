@@ -194,40 +194,6 @@ async def main(max_agents, model, problems):
     # Save intermediate results after gen_math experiment in case of a crash.
     results_df.to_excel(experiemnt_file_path, index=True) 
 
-    results_df = await param_optimization_gsm( 
-            max_agents=max_agents, 
-            model=model, 
-            problems=problems, 
-            df=results_df,
-            use_cachesaver=False
-            )
-    results_df = await param_optimization_gsm(
-            max_agents=max_agents, 
-            model=model, 
-            problems=problems, 
-            df=results_df,
-            use_cachesaver=True
-            )
-    # Save intermediate results after gen_math experiment in case of a crash.
-    results_df.to_excel(experiemnt_file_path, index=True) 
-
-    results_df = await param_optimization_biography( 
-            max_agents=max_agents, 
-            model=model, 
-            problems=problems, 
-            df=results_df,
-            use_cachesaver=False
-            )
-    results_df = await param_optimization_biography(
-            max_agents=max_agents, 
-            model=model, 
-            problems=problems, 
-            df=results_df,
-            use_cachesaver=True
-            )
-    # Save intermediate results after gen_math experiment in case of a crash.
-    results_df.to_excel(experiemnt_file_path, index=True) 
-
     results_df = await parameter_optimization_mmlu(
             max_agents=max_agents, 
             model=model, 
