@@ -105,6 +105,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
             completions_metadata = await asyncio.gather(*tasks)
             completions, metadata = zip(*completions_metadata)
 
+            client.close()
+
             for i, agent_context in enumerate(agent_contexts):
                 assistant_message = construct_assistant_message(completions[i])
                 agent_context.append(assistant_message)

@@ -139,6 +139,8 @@ async def main(file, model, use_cachesaver):
 
                 if accurate is not None:
                     accuracies.append(float(accurate))
+        
+            client.close()
 
     print("API calls - eval: ", usage_tracker["api_calls"])
 

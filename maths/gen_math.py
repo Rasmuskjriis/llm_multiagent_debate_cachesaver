@@ -111,7 +111,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         "api_calls" : 0
     }
 
-    for round in tqdm(range(problems)):
+    for problem in tqdm(range(problems)):
         a, b, c, d, e, f = np.random.randint(50, 200, size=6)
 
         answer = a + b * c + d - e * f
@@ -135,6 +135,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
             
             completions_metadata = await asyncio.gather(*tasks)
             completions, metadata = zip(*completions_metadata)
+
+            client.close()
 
             for i, agent_context in enumerate(agent_contexts):
                 assistant_message = construct_assistant_message(completions[i])
