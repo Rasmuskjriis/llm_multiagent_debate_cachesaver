@@ -81,6 +81,8 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     dfs = [pd.read_csv(task) for task in tasks]
 
     for i in range(problems):
+        client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
+
         df = random.choice(dfs)
         ix = len(df)
         idx = random.randint(0, ix-1)
@@ -90,7 +92,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         agent_contexts = [[{"role": "user", "content": question}] for agent in range(agents)]
 
         for round in range(rounds):
-            client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
 
             tasks = []
             for i, agent_context in enumerate(agent_contexts):
@@ -104,8 +105,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
             completions_metadata = await asyncio.gather(*tasks)
             completions, metadata = zip(*completions_metadata)
-
-            client.close()
 
             for i, agent_context in enumerate(agent_contexts):
                 assistant_message = construct_assistant_message(completions[i])

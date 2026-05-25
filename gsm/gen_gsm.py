@@ -69,14 +69,13 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     random.shuffle(test_problems)
 
     for data in test_problems[:problems]:
+        client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
         question = data['question']
         answer = data['answer']
 
         agent_contexts = [[{"role": "user", "content": """Can you solve the following math problem? {} Explain your reasoning. Your final answer should be a single numerical number, in the form \\boxed{{answer}}, at the end of your response. """.format(question)}] for agent in range(agents)]
 
         for round in range(rounds):
-            client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
-
             tasks = []
             for i, agent_context in enumerate(agent_contexts):
 
@@ -89,8 +88,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
             completions_metadata = await asyncio.gather(*tasks)
             completions, metadata = zip(*completions_metadata)
-
-            client.close()
 
             for i, agent_context in enumerate(agent_contexts):
                 assistant_message = construct_assistant_message(completions[i])

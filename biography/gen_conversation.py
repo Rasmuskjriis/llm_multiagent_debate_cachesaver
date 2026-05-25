@@ -90,11 +90,11 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     }
 
     for person in tqdm(people[:problems]):
+        client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
+
         agent_contexts = [[{"role": "user", "content": "Give a bullet point biography of {} highlighting their contributions and achievements as a computer scientist, with each fact separated with a new line character. ".format(person)}] for agent in range(agents)]
 
         for round in range(rounds):
-            client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
-
             tasks = []
             for i, agent_context in enumerate(agent_contexts):
 
@@ -111,8 +111,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
 
             completions_metadata = await asyncio.gather(*tasks)
             completions, metadata = zip(*completions_metadata)
-
-            client.close()
 
             for i, agent_context in enumerate(agent_contexts):
                 assistant_message = construct_assistant_message(completions[i])

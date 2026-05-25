@@ -95,6 +95,7 @@ async def main(file, model, use_cachesaver):
     }
 
     for person in people:
+        client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
 
         if person not in gt_data:
             continue
@@ -105,8 +106,6 @@ async def main(file, model, use_cachesaver):
 
         for description in bio_descriptions:
             # print("Description: ", description)
-
-            client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
 
             bio_description = description[-1]['content']
 
