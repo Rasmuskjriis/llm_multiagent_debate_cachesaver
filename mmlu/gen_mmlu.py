@@ -81,8 +81,9 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     dfs = [pd.read_csv(task) for task in tasks]
 
     for i in range(problems):
+        print("in 1")
         client = clients.make_client(model=model, use_cachesaver=use_cachesaver)
-
+        print("in 2")
         df = random.choice(dfs)
         ix = len(df)
         idx = random.randint(0, ix-1)
@@ -92,6 +93,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
         agent_contexts = [[{"role": "user", "content": question}] for agent in range(agents)]
 
         for round in range(rounds):
+            print("in 3")
 
             tasks = []
             for i, agent_context in enumerate(agent_contexts):

@@ -135,6 +135,7 @@ async def parameter_optimization_mmlu(max_rounds, model, problems, df, use_cache
     max_rounds = max_rounds
 
     for rounds in range(1, max_rounds+1):
+        print(f"Running MMLU experiment with {agents} agents and {rounds} rounds, with{'out' if not use_cachesaver else ''} CacheSaver...")
         runtime = time.time()
         filename, gen_result = await gen_mmlu_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
         eval_result = await eval_mmlu_main(file=filename)
@@ -144,6 +145,7 @@ async def parameter_optimization_mmlu(max_rounds, model, problems, df, use_cache
 
         df[f"mmlu {"w/ cs" if use_cachesaver else ""} a:{agents} r:{rounds}"] = df.index.map(result_row)
     return df
+
 
 async def main(max_rounds, model, problems):
     """
@@ -184,6 +186,8 @@ async def main(max_rounds, model, problems):
             df=results_df,
             use_cachesaver=False
             )
+    results_df.to_excel(experiemnt_file_path, index=True) 
+
     results_df = await param_turning_math(
             max_rounds=max_rounds, 
             model=model, 
@@ -192,22 +196,21 @@ async def main(max_rounds, model, problems):
             use_cachesaver=True
             )
     # Save intermediate results after gen_math experiment in case of a crash.
-    results_df.to_excel(experiemnt_file_path, index=True) 
 
-    results_df = await parameter_optimization_mmlu(
-            max_rounds=max_rounds, 
-            model=model, 
-            problems=problems, 
-            df=results_df,
-            use_cachesaver=False
-            )
-    results_df = await parameter_optimization_mmlu(
-            max_rounds=max_rounds, 
-            model=model, 
-            problems=problems, 
-            df=results_df,
-            use_cachesaver=True
-            )
+    #results_df = await parameter_optimization_mmlu(
+            #max_rounds=max_rounds, 
+            #model=model, 
+            #problems=problems, 
+            #df=results_df,
+            #use_cachesaver=False
+            #)
+    #results_df = await parameter_optimization_mmlu(
+            #max_rounds=max_rounds, 
+            #model=model, 
+            #problems=problems, 
+            #df=results_df,
+            #use_cachesaver=True
+            #)
     print(results_df)
     results_df.to_excel(experiemnt_file_path, index=True)
     
