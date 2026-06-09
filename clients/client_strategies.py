@@ -42,6 +42,57 @@ class ClientStrategy(ABC):
     def create_chat_completion(self):
         pass
 
+class CacheSaverOpenAIClient(ClientStrategy):
+    """This Client functions as a wrapper to CacheSavers AsyncOpenAI client."""
+
+    def __init__(self, model, ns=""):
+        self.client = _CacheSaverAsyncOpenAI(
+            api_key=os.environ.get("OPENAI_API_KEY"),
+            namespace=ns,
+            cachedir="./cache"
+        )
+        self.model = model
+
+    def create_chat_completion(self, messages, n=1):
+        return completion_with_metadata_cachesaver(
+                    self.client,
+                    messages=messages,
+                    model=self.model,
+                    n=n
+        )
+
+
+class OpenAIClient(ClientStrategy):
+    """This client functions as a wrapper to OpenAI's AsyncOpenAI client."""
+
+    def __init__(self, model):
+        self.client = _AsyncOpenAI(
+            api_key=os.environ.get("OPENAI_API_KEY")
+        )
+        self.model = model
+
+    def create_chat_completion(self, messages, n=1):
+        return completion_with_metadata(
+                    self.client,
+                    messages=messages,
+                    model=self.model,
+                    n=n
+        )
+
+
+def make_client(model, use_cachesaver):
+    """"utility function that handels making the right client"""
+    
+    if use_cachesaver:
+        ns = make_random_ns()
+        return CacheSaverOpenAIClient(model=model, ns=ns)
+    else:
+        return OpenAIClient(model=model)
+    
+
+# All the clinets below was used in debugging the system without having to pay tokens.
+# None of them where used in the experimets that we talked about in our paper.
+
 class CacheSaverOllamaClient(ClientStrategy):
     def __init__(self, model, ns=""):
         self.client = _CacheSaverAsyncOpenAI(
@@ -65,39 +116,6 @@ class OllamaClient(ClientStrategy):
         self.client = _AsyncOpenAI(
             base_url='http://localhost:11434/v1/',
             api_key='ollama',  # required but ignored
-        )
-        self.model = model
-
-    def create_chat_completion(self, messages, n=1):
-        return completion_with_metadata(
-                    self.client,
-                    messages=messages,
-                    model=self.model,
-                    n=n
-        )
-
-class CacheSaverOpenAIClient(ClientStrategy):
-    def __init__(self, model, ns=""):
-        self.client = _CacheSaverAsyncOpenAI(
-            api_key=os.environ.get("OPENAI_API_KEY"),
-            namespace=ns,
-            cachedir="./cache"
-        )
-        self.model = model
-
-    def create_chat_completion(self, messages, n=1):
-        return completion_with_metadata_cachesaver(
-                    self.client,
-                    messages=messages,
-                    model=self.model,
-                    n=n
-        )
-
-
-class OpenAIClient(ClientStrategy):
-    def __init__(self, model):
-        self.client = _AsyncOpenAI(
-            api_key=os.environ.get("OPENAI_API_KEY")
         )
         self.model = model
 
@@ -142,10 +160,3 @@ class GroqClient(ClientStrategy):
                     n=n
         )
     
-
-def make_client(model, use_cachesaver):
-    if use_cachesaver:
-        ns = make_random_ns()
-        return CacheSaverOpenAIClient(model=model, ns=ns)
-    else:
-        return OpenAIClient(model=model)
