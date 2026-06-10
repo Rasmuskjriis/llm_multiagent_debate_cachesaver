@@ -21,14 +21,10 @@ import asyncio
 import argparse
 
 from maths.gen_math import main as gen_math_main
-from gsm.eval_gsm import main as eval_gsm_main
-from gsm.gen_gsm import main as gen_gsm_main
-from biography.gen_conversation import main as gen_conversation_main
-from biography.eval_conversation import main as eval_conversation_main
 from mmlu.gen_mmlu import main as gen_mmlu_main
 from mmlu.eval_mmlu import main as eval_mmlu_main
 
-from utils.utils import calc_mean_sem_ci, tokens_to_cost, clear_cache, sanitize_model_name
+from utils.utils import tokens_to_cost, sanitize_model_name
 import time
 
 def make_result_row(agents, rounds, eval_rounds, model, result, runtime):
