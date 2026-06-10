@@ -181,6 +181,16 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     ci_low = mean-ci
     ci_high = mean+ci
 
+    # Print the results
+    print("-- Arithmetic Generation --")
+    print("Accuracy: ", mean)
+    print("Output tokens used: ", usage_tracker["completion_tokens_used"])
+    print("Output tokens saved: ", usage_tracker["completion_tokens_saved"])
+    print("Prompt tokens used: ", usage_tracker["prompt_tokens_used"])
+    print("Prompt tokens saved: ", usage_tracker["prompt_tokens_saved"])
+    print("API calls: ", usage_tracker["api_calls"])
+    print("--------------")
+
     return {"mean": mean, 
             "sem": sem,
             "ci": (ci_low, ci_high),

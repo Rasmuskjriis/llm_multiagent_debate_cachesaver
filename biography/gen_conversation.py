@@ -135,6 +135,15 @@ async def main(agents, rounds, problems, model, use_cachesaver):
     with open(file_name, "w") as f: 
         json.dump(generated_description, f)
 
+    # Print the results
+    print("-- Biography Generation --")
+    print("Output tokens used: ", usage_tracker["completion_tokens_used"])
+    print("Output tokens saved: ", usage_tracker["completion_tokens_saved"])
+    print("Prompt tokens used: ", usage_tracker["prompt_tokens_used"])
+    print("Prompt tokens saved: ", usage_tracker["prompt_tokens_saved"])
+    print("API calls: ", usage_tracker["api_calls"])
+    print("--------------")
+
     return file_name, {"prompt_tokens_used": usage_tracker["prompt_tokens_used"],
             "prompt_tokens_saved": usage_tracker["prompt_tokens_saved"],
             "completion_tokens_used": usage_tracker["completion_tokens_used"],

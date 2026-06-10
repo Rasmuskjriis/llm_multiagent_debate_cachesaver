@@ -148,6 +148,16 @@ async def main(file, model, use_cachesaver):
     ci_low = mean-ci
     ci_high = mean+ci
 
+    # The results
+    print("-- Biography Evaluation --")
+    print("Accuracy: ", mean)
+    print("Prompt tokens used: ", usage_tracker["prompt_tokens_used"])
+    print("Prompt tokens saved: ", usage_tracker["prompt_tokens_saved"])
+    print("Output tokens used: ", usage_tracker["completion_tokens_used"])
+    print("Output tokens saved: ", usage_tracker["completion_tokens_saved"])
+    print("API calls: ", usage_tracker["api_calls"])
+    print("--------------")
+
     return {"mean": mean, 
             "sem": sem,
             "ci": (ci_low, ci_high),

@@ -146,6 +146,12 @@ async def main(file):
     ci_low = mean-ci
     ci_high = mean+ci
 
+    
+    # Print the results
+    print("-- GSM Evaluation --")
+    print("Accuracy: ", mean)
+    print("--------------")
+
     return {"mean": mean, 
             "sem": sem,
             "ci": (ci_low, ci_high)
