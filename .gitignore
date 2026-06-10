@@ -1,8 +1,12 @@
 .vscode/
-cache/
+
 **/__pycache__/
 llm_multiagent_debate.egg-info
+
 .env
+.venv/
+
+cache/
 
 gsm/results/
 biography/results/
