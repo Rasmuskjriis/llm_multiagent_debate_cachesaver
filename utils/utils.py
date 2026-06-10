@@ -32,6 +32,7 @@ def calc_mean_sem_ci(scores):
     return mean, sem, ci
 
 def tokens_to_cost(prompt_tokens, completion_tokens, model):
+    """Calculates the cost of tokens"""
     catalogue = {
         # Groq
         # LLama-4
@@ -54,6 +55,7 @@ def tokens_to_cost(prompt_tokens, completion_tokens, model):
     return input_cost, output_cost, total_cost
 
 def clear_cache():
+    """Remove the cache file to clear the cache."""
     cache_path = "cache\cache.db"
     try:
         os.remove(cache_path)
@@ -62,6 +64,7 @@ def clear_cache():
         pass
 
 def sanitize_model_name(model_name):
+    """Makes a model name safe to use as a filename."""
     new_mn = ""
     for c in model_name:
         if c == '/':
@@ -74,11 +77,18 @@ ns_counter = 0
 ns_offset = str(np.random.randint(10000000))
 
 def make_random_ns():
+    """Generates a random namespace string for caching purposes."""
     global ns_counter
     ns_counter += 1
     return "ns_" + str(ns_offset) + "_" + str(ns_counter)
 
 def count_token_usage(usage_tracker, usage, metadata):
+    """Counts tokens used and saved
+    
+    If cached: We save all the tokens.
+    If deduplicated we only save input tokens.
+    If neither, we count all tokens as used.
+    """
     usage_tracker = usage_tracker.copy()
     
     cached = metadata.cached[0]

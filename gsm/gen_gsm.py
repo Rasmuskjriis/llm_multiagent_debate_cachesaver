@@ -119,7 +119,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--agents", type=int, default=2)
     parser.add_argument("-r", "--rounds", type=int, default=3)
     parser.add_argument("-p", "--problems", type=int, default=10)
-    parser.add_argument("-m","--model", type=str, default="qwen3:0.6b")
+    parser.add_argument("-m","--model", type=str, default="gpt-5-nano-2025-08-07")
     parser.add_argument("-c","--cachesaver", action="store_true", dest="use_cachesaver")
 
     args = parser.parse_args()

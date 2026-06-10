@@ -102,7 +102,7 @@ async def main(file, model, use_cachesaver):
 
         gt_description = gt_data[person]
         gt_bullets = parse_bullets(gt_description)
-        bio_descriptions = response[person]# [2][-1]['content']
+        bio_descriptions = response[person]
 
         for description in bio_descriptions:
             bio_description = description[-1]['content']
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-f", "--file", action="store", type=str, default="biography/results/biography_1_1.json")
-    parser.add_argument("-m","--model", type=str, default="qwen3:0.6b")
+    parser.add_argument("-m","--model", type=str, default="gpt-5-nano-2025-08-07")
     parser.add_argument("-c","--cachesaver", action="store_true", dest="use_cachesaver")
 
     args = parser.parse_args()
