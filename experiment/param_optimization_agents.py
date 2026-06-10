@@ -84,49 +84,6 @@ async def param_turning_math(max_agents, model, problems, df, use_cachesaver):
         df[f"math {"w/ cs" if use_cachesaver else ""} a:{agents} r:{rounds}"] = df.index.map(result_row)
     return df
 
-async def param_optimization_gsm(max_agents, model, problems, df, use_cachesaver):
-    """
-    Runs a parameter optimization experiment for number of agents for the grade school math subtask, with and without CacheSaver.
-    """
-    max_agents = max_agents
-    rounds = 2
-
-    for agents in range(1, max_agents+1):
-        runtime = time.time()
-        filename, gen_result = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
-        eval_result = await eval_gsm_main(file=filename)
-        runtime = time.time() - runtime
-        result = gen_result | eval_result
-        result_row = make_result_row(agents=agents, rounds=rounds, eval_rounds=problems, model=model, result=result, runtime=runtime)
-
-        df[f"gsm {"w/ cs" if use_cachesaver else ""} a:{agents} r:{rounds}"] = df.index.map(result_row)
-    return df
-
-async def param_optimization_biography(max_agents, model, problems, df, use_cachesaver):
-    """
-    Runs a parameter optimization experiment for number of agents for the biography subtask, with and without CacheSaver.
-    """
-    max_agents = max_agents
-    rounds = 2
-
-    for agents in range(1, max_agents+1):
-        runtime = time.time()
-        filename, metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
-        eval = await eval_conversation_main(file=filename, model=model, use_cachesaver=use_cachesaver)
-        runtime = time.time() - runtime
-
-        metrics["prompt_tokens_used"] += eval["prompt_tokens_used"]
-        metrics["prompt_tokens_saved"] += eval["prompt_tokens_saved"]
-        metrics["completion_tokens_used"] += eval["completion_tokens_used"]
-        metrics["completion_tokens_saved"] += eval["completion_tokens_saved"]
-        metrics["api_calls"] += eval["api_calls"]
-
-        result = eval | metrics
-        result_row = make_result_row(agents=agents, rounds=rounds, eval_rounds=problems, model=model, result=result, runtime=runtime)
-
-        df[f"biography {"w/ cs" if use_cachesaver else ""} a:{agents} r:{rounds}"] = df.index.map(result_row)
-    return df
-
 async def parameter_optimization_mmlu(max_agents, model, problems, df, use_cachesaver):
     """
     Runs a parameter optimization experiment for number of agents for the MMLU subtask, with and without CacheSaver.

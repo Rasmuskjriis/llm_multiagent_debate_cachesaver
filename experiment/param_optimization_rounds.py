@@ -2,10 +2,8 @@
 This runs module runs optimization experiments as in LLMDebate paper we fork this code from, to see how
 much CacheSaver can save when running parameter optimization on this MAS.
 
-To be exact, we run the following experiments:
+To be exact, we ran the following experiments:
 - Math: We test for 3 agents and 1-4 rounds, 100 problems, with and without CacheSaver
-- Grade School Math: We test for 3 agents and 1-4 rounds, 100 problems, with and without CacheSaver
-- Biography: We test for 3 agents and 1-4 rounds, 100 problems, with and without CacheSaver
 - MMLU: We test for 3 agents and 1-4 rounds, 100 problems, with and without CacheSaver
 
 All while we track the following metrics:
@@ -23,14 +21,10 @@ import asyncio
 import argparse
 
 from maths.gen_math import main as gen_math_main
-from gsm.eval_gsm import main as eval_gsm_main
-from gsm.gen_gsm import main as gen_gsm_main
-from biography.gen_conversation import main as gen_conversation_main
-from biography.eval_conversation import main as eval_conversation_main
 from mmlu.gen_mmlu import main as gen_mmlu_main
 from mmlu.eval_mmlu import main as eval_mmlu_main
 
-from utils.utils import calc_mean_sem_ci, tokens_to_cost, clear_cache, sanitize_model_name
+from utils.utils import tokens_to_cost, sanitize_model_name
 import time
 
 def make_result_row(agents, rounds, eval_rounds, model, result, runtime):
@@ -82,49 +76,6 @@ async def param_turning_math(max_rounds, model, problems, df, use_cachesaver):
         result_row = make_result_row(agents=agents, rounds=rounds, eval_rounds=problems, model=model, result=result, runtime=runtime)
 
         df[f"math {"w/ cs" if use_cachesaver else ""} a:{agents} r:{rounds}"] = df.index.map(result_row)
-    return df
-
-async def param_optimization_gsm(max_rounds, model, problems, df, use_cachesaver):
-    """
-    Runs a parameter optimization experiment for number of debate rounds for the grade school math subtask, with and without CacheSaver.
-    """
-    agents = 3
-    max_rounds = max_rounds
-
-    for rounds in range(1, max_rounds+1):
-        runtime = time.time()
-        filename, gen_result = await gen_gsm_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
-        eval_result = await eval_gsm_main(file=filename)
-        runtime = time.time() - runtime
-        result = gen_result | eval_result
-        result_row = make_result_row(agents=agents, rounds=rounds, eval_rounds=problems, model=model, result=result, runtime=runtime)
-
-        df[f"gsm {"w/ cs" if use_cachesaver else ""} a:{agents} r:{rounds}"] = df.index.map(result_row)
-    return df
-
-async def param_optimization_biography(max_rounds, model, problems, df, use_cachesaver):
-    """
-    Runs a parameter optimization experiment for number of debate rounds for the biography subtask, with and without CacheSaver.
-    """
-    agents = 3
-    max_rounds = max_rounds
-
-    for rounds in range(1, max_rounds+1):
-        runtime = time.time()
-        filename, metrics = await gen_conversation_main(agents=agents, rounds=rounds, problems=problems, model=model, use_cachesaver=use_cachesaver)
-        eval = await eval_conversation_main(file=filename, model=model, use_cachesaver=use_cachesaver)
-        runtime = time.time() - runtime
-
-        metrics["prompt_tokens_used"] += eval["prompt_tokens_used"]
-        metrics["prompt_tokens_saved"] += eval["prompt_tokens_saved"]
-        metrics["completion_tokens_used"] += eval["completion_tokens_used"]
-        metrics["completion_tokens_saved"] += eval["completion_tokens_saved"]
-        metrics["api_calls"] += eval["api_calls"]
-
-        result = eval | metrics
-        result_row = make_result_row(agents=agents, rounds=rounds, eval_rounds=problems, model=model, result=result, runtime=runtime)
-
-        df[f"biography {"w/ cs" if use_cachesaver else ""} a:{agents} r:{rounds}"] = df.index.map(result_row)
     return df
 
 async def parameter_optimization_mmlu(max_rounds, model, problems, df, use_cachesaver):
@@ -186,6 +137,8 @@ async def main(max_rounds, model, problems):
             df=results_df,
             use_cachesaver=False
             )
+    
+    # Save intermediate results
     results_df.to_excel(experiemnt_file_path, index=True) 
 
     results_df = await param_turning_math(
@@ -195,24 +148,30 @@ async def main(max_rounds, model, problems):
             df=results_df,
             use_cachesaver=True
             )
-    # Save intermediate results after gen_math experiment in case of a crash.
+    
+    # Save intermediate results 
+    results_df.to_excel(experiemnt_file_path, index=True) 
 
-    #results_df = await parameter_optimization_mmlu(
-            #max_rounds=max_rounds, 
-            #model=model, 
-            #problems=problems, 
-            #df=results_df,
-            #use_cachesaver=False
-            #)
-    #results_df = await parameter_optimization_mmlu(
-            #max_rounds=max_rounds, 
-            #model=model, 
-            #problems=problems, 
-            #df=results_df,
-            #use_cachesaver=True
-            #)
-    print(results_df)
+    results_df = await parameter_optimization_mmlu(
+            max_rounds=max_rounds, 
+            model=model, 
+            problems=problems, 
+            df=results_df,
+            use_cachesaver=False
+            )
+    
+    # Save intermediate results 
+    results_df.to_excel(experiemnt_file_path, index=True) 
+
+    results_df = await parameter_optimization_mmlu(
+            max_rounds=max_rounds, 
+            model=model, 
+            problems=problems, 
+            df=results_df,
+            use_cachesaver=True
+            )
     results_df.to_excel(experiemnt_file_path, index=True)
+    print(results_df)
     
 
 if __name__ == "__main__":
