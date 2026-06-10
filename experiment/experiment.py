@@ -247,7 +247,6 @@ async def main(model, size_of_experiment):
     results_df = await run_mmlu_experiment(model, size_of_experiment, results_df)
     results_df.to_excel(result_path, index=True)
 
-    # results_df = results_df.T
     print(results_df)
     
 if __name__ == "__main__":

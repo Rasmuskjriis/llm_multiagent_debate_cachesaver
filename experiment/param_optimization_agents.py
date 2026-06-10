@@ -101,7 +101,6 @@ async def main(max_agents, model, problems):
     Clears our cache, and then runs all the experiments from this module,
     then saves the result to an excel file.
     """
-    #clear_cache()
     experiemnt_file_path = f"experiment/param_optimization_results/agents_param_optimization_{sanitize_model_name(model)}_{problems}.xlsx"
 
     results_df = pd.DataFrame()
@@ -156,7 +155,7 @@ async def main(max_agents, model, problems):
             problems=problems, 
             df=results_df,
             use_cachesaver=False
-            )¨
+            )
     
     # Save intermediate results.
     results_df.to_excel(experiemnt_file_path, index=True)

@@ -86,7 +86,6 @@ def compute_accuracy(gt, pred_solutions):
         if pred_answer is None:
             return 0
         pred_answer = most_frequent(pred_answers)
-        # pred_answer = pred_answers[0]
     else:
         pred_answer = parse_answer(pred_solutions)
         if pred_answer is None:
@@ -128,12 +127,10 @@ async def main(file):
             pred_solutions.append(pred_solution)
 
         accurate = compute_accuracy(gt, pred_solutions)
-        # print("Actual solution: ", gt)
 
         if accurate is not None:
             accuracies.append(float(accurate))
         else:
-            # print(gt) # we dont want to print in experiment
             pass
 
     # Only update if LLM outputs a meaningful answer ie. a number to the list text_answers

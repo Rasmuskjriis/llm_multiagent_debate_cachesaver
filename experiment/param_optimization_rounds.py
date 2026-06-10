@@ -103,7 +103,6 @@ async def main(max_rounds, model, problems):
     Clears our cache, and then runs all the experiments from this module,
     then saves the result to an excel file.
     """
-    #clear_cache()
     experiemnt_file_path = f"experiment/param_optimization_results/round_param_optimization_{sanitize_model_name(model)}_{problems}.xlsx"
 
     results_df = pd.DataFrame()
