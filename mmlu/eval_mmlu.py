@@ -61,18 +61,11 @@ def parse_answer(input_str):
     matches = re.findall(pattern, input_str)
 
     solution = None
-    # print("predicted solution")
-    # print(input_str)
-    # print("matches")
-    # print(matches)
 
     for match_str in matches[::-1]:
         solution = match_str.upper()
         if solution:
             break
-
-    # print("final match")
-    # print(solution)
 
     return solution
 

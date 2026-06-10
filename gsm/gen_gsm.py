@@ -6,7 +6,7 @@ import asyncio
 import argparse
 
 import clients.client_strategies as clients
-from utils.utils import tokens_to_cost
+from utils.utils import tokens_to_cost, count_token_usage
 
 async def generate_answer(client, answer_context):
     try:
@@ -96,24 +96,7 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                 usage = getattr(completions[i], "usage", None)
                 usage_metadata = metadata[i]
 
-                cached = usage_metadata.cached[0]
-                duplicated = usage_metadata.duplicated[0]
-
-                if cached: # If cached, all tokens are saved
-                    usage_tracker["prompt_tokens_saved"] += usage.prompt_tokens
-                    usage_tracker["completion_tokens_saved"] += usage.completion_tokens
-                elif duplicated: # If duped only prompt tokens are saved
-                    usage_tracker["prompt_tokens_saved"] += usage.prompt_tokens
-                    usage_tracker["completion_tokens_used"] += usage.completion_tokens
-                else:
-                    usage_tracker["prompt_tokens_used"] += usage.prompt_tokens
-                    usage_tracker["completion_tokens_used"] += usage.completion_tokens
-                    usage_tracker["api_calls"] += 1     
-
-                # Add to cost
-                #input_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[0]
-                #output_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[1]
-                #total_cost += tokens_to_cost(usage.prompt_tokens, usage.completion_tokens, model)[2]
+                usage_tracker = count_token_usage(usage_tracker, usage, usage_metadata)
 
         generated_description[question] = (agent_contexts, answer)
 

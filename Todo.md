@@ -1,5 +1,5 @@
 Last touches
-[] Remove clutter files
+[X] Remove clutter files
 [] clean out comment code
 [] remove not relevant code
 [] up documentation of what we have added

@@ -118,9 +118,6 @@ async def main(agents, rounds, problems, model, use_cachesaver):
                 
         response_dict[question] = (agent_contexts, answer)
 
-        # print(agent_contexts)
-        # print(answer)
-
     file_name = "mmlu/results/mmlu_{}_{}.json".format(agents, rounds)
     with open(file_name, "w") as f:
         json.dump(response_dict, f)

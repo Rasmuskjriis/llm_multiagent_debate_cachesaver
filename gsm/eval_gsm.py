@@ -80,7 +80,6 @@ def compute_accuracy(gt, pred_solutions):
         pred_answers = []
 
         for pred_solution in pred_solutions:
-            #print("pred_solution: ", pred_solution)
             pred_answer = parse_answer(pred_solution)
 
             if pred_answer is None:
@@ -88,10 +87,7 @@ def compute_accuracy(gt, pred_solutions):
 
             pred_answers.append(pred_answer)
 
-        # print("pred_answers: ", pred_answers)
         pred_answer = most_frequent(pred_answers)
-        # print("pred answer: ", pred_answer)
-        # pred_answer = pred_answers[0]
     else:
         pred_answer = parse_answer(pred_solution)
         if pred_answer is None:
@@ -100,15 +96,10 @@ def compute_accuracy(gt, pred_solutions):
     if pred_answer is None:
         return 1
 
-    # try:
     if float(answers) == float(pred_answer):
         return 1
     else:
         return 0
-    # except:
-    #     import pdb
-    #     pdb.set_trace()
-    #     print(pred_solution)
 
 
 def most_frequent(List):

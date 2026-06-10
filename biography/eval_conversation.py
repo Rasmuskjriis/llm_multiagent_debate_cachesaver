@@ -105,8 +105,6 @@ async def main(file, model, use_cachesaver):
         bio_descriptions = response[person]# [2][-1]['content']
 
         for description in bio_descriptions:
-            # print("Description: ", description)
-
             bio_description = description[-1]['content']
 
             bio_bullets = parse_bullets(bio_description)
@@ -116,7 +114,6 @@ async def main(file, model, use_cachesaver):
                     continue
 
             bio_bullets = " ".join(bio_bullets)
-            # continue
 
             for bullet in gt_bullets:
                 print("person: ", person)
