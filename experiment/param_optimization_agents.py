@@ -2,11 +2,9 @@
 This runs module runs optimization experiments as in LLMDebate paper we fork this code from, to see how
 much CacheSaver can save when running parameter optimization on this MAS.
 
-To be exact, we run the following experiments:
-- Math: We test for 1-7 agents and 2 rounds, 100 problems, with and without CacheSaver
-- Grade School Math: We test for 1-7 agents and 2 rounds, 100 problems, with and without CacheSaver
-- Biography: We test for 1-7 agents and 2 rounds, 100 problems, with and without CacheSaver
-- MMLU: We test for 1-7 agents and 2 rounds, 100 problems, with and without CacheSaver
+To be exact, we ran the following tests:
+- Math: We test for 1-4 agents and 2 rounds, 100 problems, with and without CacheSaver
+- MMLU: We test for 1-4 agents and 2 rounds, 100 problems, with and without CacheSaver
 
 All while we track the following metrics:
 - Accuracy
@@ -141,6 +139,10 @@ async def main(max_agents, model, problems):
             df=results_df,
             use_cachesaver=False
             )
+    
+    # Save intermediate results.
+    results_df.to_excel(experiemnt_file_path, index=True)
+
     results_df = await param_turning_math(
             max_agents=max_agents, 
             model=model, 
@@ -148,7 +150,8 @@ async def main(max_agents, model, problems):
             df=results_df,
             use_cachesaver=True
             )
-    # Save intermediate results after gen_math experiment in case of a crash.
+    
+    # Save intermediate results.
     results_df.to_excel(experiemnt_file_path, index=True) 
 
     results_df = await parameter_optimization_mmlu(
@@ -157,7 +160,11 @@ async def main(max_agents, model, problems):
             problems=problems, 
             df=results_df,
             use_cachesaver=False
-            )
+            )¨
+    
+    # Save intermediate results.
+    results_df.to_excel(experiemnt_file_path, index=True)
+
     results_df = await parameter_optimization_mmlu(
             max_agents=max_agents, 
             model=model, 
@@ -165,8 +172,9 @@ async def main(max_agents, model, problems):
             df=results_df,
             use_cachesaver=True
             )
-    print(results_df)
+    
     results_df.to_excel(experiemnt_file_path, index=True)
+    print(results_df)
     
 
 if __name__ == "__main__":
